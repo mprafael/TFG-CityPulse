@@ -2,7 +2,7 @@
 
 **CityPulse** es una aplicación web Full-Stack desarrollada para centralizar y visualizar en tiempo real diferentes medios de transporte urbano (EMT, Metro, VTC, Taxis) en un único mapa interactivo.
 
-> **Nota para el evaluador:** Esta es la **primera entrega (MVP)** del proyecto. Actualmente cuenta con la interfaz de usuario completa, navegación funcional, integración de mapas mediante Mapbox y un servidor Backend que provee una API REST con datos simulados de vehículos en Málaga para comprobar la comunicación cliente-servidor.
+> **Nota:** Esta es la **primera entrega (MVP)** del proyecto. Actualmente cuenta con la interfaz de usuario, navegación funcional, integración de mapas mediante Mapbox y un servidor Backend que provee una API REST con datos simulados de vehículos en Málaga para comprobar la comunicación cliente-servidor.
 
 ---
 
@@ -59,6 +59,7 @@ Antes de arrancar el frontend, necesitas configurar la clave del mapa.
 VITE_MAPBOX_TOKEN=pk.tu_token_publico_de_mapbox_aqui
 
 Una vez creado el archivo .env, arranca la aplicación:
+### (Como ahora es una entrega para revision ya tiene un .env con mi API, obviamente de normal esto no se sube)
 
 ```bash
 # 3. Inicia el frontend en modo desarrollo
