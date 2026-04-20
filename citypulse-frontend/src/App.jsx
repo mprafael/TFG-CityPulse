@@ -3,14 +3,17 @@ import Home from './pages/Home';
 import MapPage from './pages/MapPage';
 import Login from './pages/Login';
 import Profile from './pages/Profile';
+import Footer from './components/Footer';
 import { Map, User, LogIn, Home as HomeIcon } from 'lucide-react';
 
 function App() {
   return (
     <Router>
-      <div className="flex flex-col h-screen overflow-hidden bg-gray-50">
-        {/* Barra de Navegación Superior */}
-        <nav className="bg-white shadow-sm border-b p-4 flex justify-between items-center z-10 relative">
+      {/* CAMBIO 1: min-h-screen y quitamos overflow-hidden */}
+      <div className="flex flex-col min-h-screen bg-gray-50">
+        
+        {/* CAMBIO 2: sticky top-0 y z-50 para que la barra se quede siempre arriba al hacer scroll */}
+        <nav className="sticky top-0 bg-white shadow-sm border-b p-4 flex justify-between items-center z-50">
           <Link to="/" className="text-2xl font-bold text-citypulse-blue flex items-center gap-2">
             <ActivityIcon /> CityPulse
           </Link>
@@ -31,21 +34,24 @@ function App() {
           </div>
         </nav>
 
-        {/* Contenido de las páginas */}
-        <main className="flex-1 relative overflow-auto">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/map" element={<MapPage />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/profile" element={<Profile />} />
-          </Routes>
+        {/* CAMBIO 3: Quitamos el overflow-auto, el scroll lo hace ahora la ventana entera */}
+        <main className="flex-1 relative flex flex-col">
+          <div className="flex-1">
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/map" element={<MapPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </div>
+          
+          <Footer />
         </main>
       </div>
     </Router>
   );
 }
 
-// Icono del logo minimalista
 function ActivityIcon() {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
