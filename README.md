@@ -2,12 +2,15 @@
 
 **CityPulse** es una aplicación web Full-Stack desarrollada para centralizar y visualizar en tiempo real diferentes medios de transporte urbano (EMT, Metro, VTC, Taxis) en un único mapa interactivo.
 
-> **Nota:** Esta es la **primera entrega (MVP)** del proyecto. Actualmente cuenta con la interfaz de usuario, navegación funcional, integración de mapas mediante Mapbox y un servidor Backend que provee una API REST con datos simulados de vehículos en Málaga para comprobar la comunicación cliente-servidor.
+> **Nota:** Esta versión incluye la **Landing Page Profesional** con efectos de scroll avanzados y una arquitectura de componentes optimizada. Se mantiene la integración de Mapbox y la API REST con datos simulados.
 
 ---
 
 ## 🛠️ Stack Tecnológico Actual (PERN Stack en progreso)
 * **Frontend:** React, Vite, TailwindCSS (v3), Mapbox GL JS, React Router, Lucide React.
+* **Animaciones:** GSAP (GreenSock Animation Platform) + ScrollTrigger.
+* **Mapas:** Mapbox GL JS.
+* **Navegación:** React Router (SPA).
 * **Backend:** Node.js, Express, CORS.
 * **Gestor de paquetes:** `pnpm` (recomendado por velocidad y eficiencia).
 
@@ -66,14 +69,14 @@ Una vez creado el archivo .env, arranca la aplicación:
 pnpm dev
 ```
 
-🧪 ¿Qué probar en esta versión?
-Una vez que ambos servidores estén corriendo, puedes probar las siguientes funcionalidades:
+🧪 Funcionalidades para Revisión
+Una vez que ambos servidores estén corriendo, se recomienda probar:
 
-Navegación fluida (SPA): Navega entre la página de Inicio, Login y Perfil sin recargas de página.
+Scroll en Home: Observa el efecto de zoom y acercamiento del autobús y el metro al bajar por la página.
 
-Mapa Interactivo: Ve a la pestaña "Mapa". Verás un mapa centrado en Málaga capital.
+Navegación Limpia: Cambia entre "Inicio" y "Mapa". Nota cómo el Footer desaparece en el mapa para maximizar el área de trabajo.
 
-Comunicación Full-Stack: Al cargar el mapa, el Frontend realiza una petición fetch al Backend (/api/vehicles). El servidor responde con los datos y el mapa dibuja automáticamente los marcadores (autobuses, VTC y taxis) con estilos dinámicos de Tailwind CSS.
+Puntos de Control: Verifica en la consola del navegador que el fetch al backend sigue recuperando los vehículos correctamente.
 
 
 ### Autor: Rafael Macías Peláez

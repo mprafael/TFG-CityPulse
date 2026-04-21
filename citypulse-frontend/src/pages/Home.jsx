@@ -4,6 +4,7 @@ import { Map, Zap, Smartphone, User, Code } from 'lucide-react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import bgMap from '../assets/bg-map.png';
 
 import busImg from '../assets/bus.png';
 import metroImg from '../assets/metro.png';
@@ -50,32 +51,44 @@ export default function Home() {
     // Contenedor principal sin altura fija para permitir scroll
     <div ref={mainContainer} className="flex flex-col bg-white">
       
-      {/* 1. SECCIÓN HERO ANIMADA */}
+      {/* 1. SECCIÓN HERO CON MAPA DE FONDO */}
       <section 
         ref={heroRef} 
-        className="relative flex flex-col items-center justify-center min-h-[calc(100vh-76px)] overflow-hidden bg-gray-50 p-6 border-b border-gray-100"
+        // Eliminamos el bg-gray-50 y añadimos relative y overflow-hidden
+        className="relative flex flex-col items-center justify-center min-h-[calc(100vh-76px)] overflow-hidden border-b border-gray-100 p-6"
       >
-        {/* Contenedor de las imágenes animadas (Detrás del texto) */}
-        <div className="hidden md:flex absolute inset-0 pointer-events-none flex items-center justify-center overflow-hidden">
+        
+        {/* NUEVO: Capa 1 - La imagen del mapa de fondo */}
+        <div 
+          className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${bgMap})` }}
+        ></div>
+
+        {/* NUEVO: Capa 2 - Filtro semi-transparente y desenfoque (Glassmorphism) */}
+        {/* bg-white/80 la hace un 80% blanca, y backdrop-blur-sm difumina el mapa debajo */}
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-0"></div>
+
+        {/* Capa 3: Contenedor de las imágenes animadas de GSAP (El bus y el metro) */}
+        <div className="hidden md:flex absolute inset-0 pointer-events-none items-center justify-center overflow-hidden z-10">
           <img 
             src={busImg} 
-            className="bus-anim absolute left-[-5%] w-[500px] opacity-20 md:opacity-40" 
+            className="bus-anim absolute left-[0%] w-[450px] opacity-20 md:opacity-40" 
             alt="Autobús animado" 
           />
           <img 
             src={metroImg} 
-            className="metro-anim absolute right-[-5%] w-[500px] opacity-20 md:opacity-40" 
+            className="metro-anim absolute right-[0%] w-[425px] opacity-20 md:opacity-40" 
             alt="Metro animado" 
           />
         </div>
 
-        {/* Contenido del Hero */}
-        <div className="relative z-10 max-w-4xl text-center">
-          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
+        {/* Capa 4: Contenido de Texto y Botones (Z-20 para que estén siempre arriba) */}
+        <div className="relative z-20 max-w-4xl text-center">
+          <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight drop-shadow-sm">
             El pulso de tu ciudad, <br/>
             <span className="text-citypulse-blue">en tiempo real</span>
           </h1>
-          <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-800 font-medium mb-10 max-w-2xl mx-auto drop-shadow-sm">
             CityPulse centraliza VTC, autobuses, metro y taxis en un único mapa interactivo.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
