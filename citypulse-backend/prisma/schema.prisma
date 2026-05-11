@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// 1. Tabla de Usuarios
+model User {
+  id               String    @id @default(uuid())
+  name             String   
+  email            String    @unique 
+  password         String   
+  username         String?   @unique 
+  avatar           String?  
+  
+  isActive           Boolean   @default(false) // Nueva: la cuenta empieza desactivada
+  verificationToken  String?   @unique         // Nueva: para el enlace del correo
+
+  deleteToken       String?   @unique
+  deleteTokenExpiry DateTime?
+
+  // Campos para la recuperación de contraseña
+  resetToken       String?   @unique
+  resetTokenExpiry DateTime? 
+  
+  // RELACIÓN: Un usuario puede tener MUCHAS rutas guardadas
+  routes           Route[]
+
+  createdAt        DateTime  @default(now()) 
+  updatedAt        DateTime  @updatedAt      
+}
+
+// 2. Tabla de Rutas Guardadas
+model Route {
+  id          String   @id @default(uuid())
+  name        String   // Ej: "Ruta al trabajo", "Viaje al centro"
+  
+  // Coordenadas de Origen
+  originLat   Float
+  originLng   Float
+  
+  // Coordenadas de Destino
+  destLat     Float
+  destLng     Float
+  
+  // Datos extra opcionales para pintar en la interfaz
+  distance    Float?   // Distancia en kilómetros o metros
+  duration    Int?     // Duración estimada en minutos
+
+  // RELACIÓN: Esta ruta pertenece a un único usuario
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+}

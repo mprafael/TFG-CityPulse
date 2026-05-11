@@ -2,17 +2,26 @@
 
 **CityPulse** es una aplicación web Full-Stack desarrollada para centralizar y visualizar en tiempo real diferentes medios de transporte urbano (EMT, Metro, VTC, Taxis) en un único mapa interactivo.
 
-> **Nota:** Esta versión incluye la **Landing Page Profesional** con efectos de scroll avanzados y una arquitectura de componentes optimizada. Se mantiene la integración de Mapbox y la API REST con datos simulados.
+> **Nota:** Esta es la versión **MVP Funcional**. Incluye la Landing Page animada y el núcleo principal de la aplicación: un mapa interactivo conectado por WebSockets a un servidor Node.js que transmite datos de flotas en tiempo real, junto con geolocalización del usuario.
 
 ---
 
-## 🛠️ Stack Tecnológico Actual (PERN Stack en progreso)
-* **Frontend:** React, Vite, TailwindCSS (v3), Mapbox GL JS, React Router, Lucide React.
-* **Animaciones:** GSAP (GreenSock Animation Platform) + ScrollTrigger.
-* **Mapas:** Mapbox GL JS.
-* **Navegación:** React Router (SPA).
+## 🛠️ Stack Tecnológico
+* **Frontend:** React, Vite, TailwindCSS (v3), Lucide React.
+* **Mapas y UI:** Mapbox GL JS (`react-map-gl`), Popups interactivos.
+* **Animaciones:** GSAP + ScrollTrigger (Landing Page).
 * **Backend:** Node.js, Express, CORS.
-* **Gestor de paquetes:** `pnpm` (recomendado por velocidad y eficiencia).
+* **Tiempo Real:** **Socket.IO** (Comunicación bidireccional cliente-servidor).
+* **Gestor de paquetes:** `pnpm`.
+
+---
+
+## 🚀 Novedades de esta Versión (Motor de Tiempo Real)
+1. **Conexión WebSockets (Socket.IO):** El servidor backend cuenta ahora con un motor que emite las coordenadas de los vehículos constantemente, permitiendo que el cliente reaccione sin necesidad de recargar la página (polling).
+2. **Movimiento Fluido (Interpolación):** Implementación de transiciones CSS lineales para que los vehículos se deslicen suavemente por el mapa entre coordenada y coordenada.
+3. **Geolocalización del Usuario:** Integración con la API nativa del navegador para ubicar al usuario en el mapa mediante una animación "Fly-To" y un marcador de pulso de radar.
+4. **Filtrado Dinámico en Vivo:** Panel de control interactivo que permite encender y apagar capas de transporte (solo EMT, solo VTC, etc.) renderizando el mapa al instante mediante estados de React.
+5. **Popups Inteligentes:** Sistema de detalles al hacer clic en los vehículos que sigue al marcador mientras este se desplaza.
 
 ---
 
@@ -69,14 +78,14 @@ Una vez creado el archivo .env, arranca la aplicación:
 pnpm dev
 ```
 
-🧪 Funcionalidades para Revisión
-Una vez que ambos servidores estén corriendo, se recomienda probar:
+🧪 Qué probar en esta revisión
+Landing Page: Scroll hacia abajo para ver el efecto paralaje/acercamiento de los vehículos con GSAP sobre el fondo de cristal (Glassmorphism).
 
-Scroll en Home: Observa el efecto de zoom y acercamiento del autobús y el metro al bajar por la página.
+Mapa Inmersivo: Ve a la pestaña "Mapa". Observa cómo los vehículos se mueven solos recibiendo los datos del backend.
 
-Navegación Limpia: Cambia entre "Inicio" y "Mapa". Nota cómo el Footer desaparece en el mapa para maximizar el área de trabajo.
+Panel de Filtros: Usa el menú lateral izquierdo para ocultar los taxis o los VTC. El mapa se limpiará al instante.
 
-Puntos de Control: Verifica en la consola del navegador que el fetch al backend sigue recuperando los vehículos correctamente.
+Botón de Ubicación: Pulsa el icono de la diana (abajo a la derecha) y acepta los permisos del navegador para ver la animación de vuelo hacia tu ubicación real.
 
 
 ### Autor: Rafael Macías Peláez

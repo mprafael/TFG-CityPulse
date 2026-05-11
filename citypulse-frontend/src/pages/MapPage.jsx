@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Map, { Marker, Popup } from 'react-map-gl/mapbox'; // OPCIÓN A: Añadimos Popup
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { Bus, CarFront, Navigation, Filter, Target, X } from 'lucide-react'; // OPCIÓN B: Añadimos Target para el icono
+import { Bus, TrainFront, CarFront, Navigation, Filter, Target, X } from 'lucide-react'; // OPCIÓN B: Añadimos Target para el icono
 import { io } from 'socket.io-client';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
@@ -15,7 +15,7 @@ export default function MapPage() {
   });
 
   const [vehicles, setVehicles] = useState([]);
-  const [activeFilters, setActiveFilters] = useState({ bus: true, vtc: true, taxi: true });
+  const [activeFilters, setActiveFilters] = useState({ bus: true, metro: true, vtc: true, taxi: true });
 
   const [userLocation, setUserLocation] = useState(null);
   
@@ -68,12 +68,14 @@ const handleMyLocation = () => {
 
   const renderIcon = (type) => {
     if (type === 'bus') return <Bus size={16} />;
+    if (type === 'metro') return <TrainFront size={16} />;
     if (type === 'vtc' || type === 'taxi') return <CarFront size={16} />;
     return <div className="w-4 h-4 rounded-full bg-red-500" />;
   };
 
   const getMarkerColor = (type) => {
     if (type === 'bus') return 'bg-blue-500 text-white';
+    if (type === 'metro') return 'bg-emerald-500 text-white';
     if (type === 'vtc') return 'bg-slate-900 text-white';
     if (type === 'taxi') return 'bg-yellow-400 text-black';
     return 'bg-gray-500 text-white';
@@ -201,6 +203,13 @@ const handleMyLocation = () => {
           <button onClick={() => toggleFilter('bus')} className={`flex items-center justify-between w-full p-3 rounded-lg border-2 transition-all font-semibold ${activeFilters.bus ? 'border-blue-500 bg-blue-50 text-blue-800' : 'border-gray-200 bg-white text-gray-400'}`}>
             <span className="flex items-center gap-2"><Bus size={18}/> Autobuses EMT</span>
             {activeFilters.bus && <div className="w-3 h-3 rounded-full bg-blue-500"></div>}
+          </button>
+
+          <button 
+            onClick={() => toggleFilter('metro')} 
+            className={`flex items-center justify-between w-full p-3 rounded-lg border-2 transition-all font-semibold ${activeFilters.metro ? 'border-emerald-500 bg-emerald-50 text-emerald-800' : 'border-gray-200 bg-white text-gray-400 hover:border-emerald-200'}`}>
+            <span className="flex items-center gap-2"><TrainFront size={18}/> Metro de Málaga</span>
+            {activeFilters.metro && <div className="w-3 h-3 rounded-full bg-emerald-500"></div>}
           </button>
 
           <button onClick={() => toggleFilter('vtc')} className={`flex items-center justify-between w-full p-3 rounded-lg border-2 transition-all font-semibold ${activeFilters.vtc ? 'border-slate-800 bg-slate-100 text-slate-900' : 'border-gray-200 bg-white text-gray-400'}`}>

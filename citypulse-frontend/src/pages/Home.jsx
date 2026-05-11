@@ -95,7 +95,7 @@ export default function Home() {
             <Link to="/map" className="bg-citypulse-blue text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition shadow-lg text-lg">
               Ir al Mapa Interactivo
             </Link>
-            <Link to="/login" className="bg-white text-citypulse-blue border-2 border-citypulse-blue px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition text-lg">
+            <Link to="/login" state={{ isRegister: true }} className="bg-white text-citypulse-blue border-2 border-citypulse-blue px-8 py-4 rounded-lg font-semibold hover:bg-gray-50 transition text-lg">
               Crear cuenta
             </Link>
           </div>

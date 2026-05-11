@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Code, Map as MapIcon, Activity } from 'lucide-react';
+import { Code, Activity } from 'lucide-react';
 
 export default function Footer() {
   const location = useLocation();
@@ -58,10 +58,18 @@ export default function Footer() {
 
       </div>
 
-      {/* Barra inferior de Copyright */}
-      <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-gray-800 text-sm text-center md:text-left flex flex-col md:flex-row justify-between items-center">
-        <p>© {new Date().getFullYear()} Rafael Macías Peláez. Todos los derechos reservados.</p>
-        <p className="mt-2 md:mt-0">Málaga, España</p>
+      {/* Barra inferior de Copyright y Legal */}
+      <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-gray-800 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-center md:text-left">
+          © {new Date().getFullYear()} Rafael Macías Peláez. Todos los derechos reservados.
+        </p>
+        <div className="flex items-center gap-4 text-center">
+          <Link to="/terminos" className="hover:text-white transition-colors">
+            Términos y Condiciones
+          </Link>
+          <span className="hidden md:inline text-gray-600">•</span>
+          <p>Málaga, España</p>
+        </div>
       </div>
     </footer>
   );
