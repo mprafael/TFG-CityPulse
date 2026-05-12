@@ -55,47 +55,199 @@ transporter.verify().then(() => {
   console.error('❌ Error al conectar con el correo:', error);
 });
 
-// --- DATOS SIMULADOS (MOCK) PARA EL MAPA ---
-const DUMMY_VEHICLES = [
-  { id: 'emt-1', type: 'bus', lat: 36.7213, lng: -4.4214, label: 'Línea 1', color: 'bg-blue-500' },
-  { id: 'emt-2', type: 'bus', lat: 36.7185, lng: -4.4250, label: 'Línea 3', color: 'bg-blue-500' },
-  { id: 'vtc-1', type: 'vtc', lat: 36.7250, lng: -4.4180, label: 'Uber', color: 'bg-slate-900' },
-  { id: 'taxi-1', type: 'taxi', lat: 36.7200, lng: -4.4150, label: 'Taxi', color: 'bg-yellow-400 text-black' },
-  { id: 'metro-1', type: 'metro', lat: 36.7170, lng: -4.4300, label: 'Línea 1 (Atarazanas)', color: 'bg-emerald-500' },
-  { id: 'metro-2', type: 'metro', lat: 36.7150, lng: -4.4400, label: 'Línea 2 (Guadalmedina)', color: 'bg-emerald-500' },
-];
 
-// --- LÓGICA DE WEBSOCKETS (TIEMPO REAL) ---
+// ==============================================================
+// --- MOTOR DE SIMULACIÓN DEFINITIVO (API MAPBOX DIRECTIONS) ---
+// ==============================================================
+
+const MAPBOX_TOKEN = process.env.MAPBOX_TOKEN; 
+
+// Puntos de inicio y fin de las rutas principales
+const ROUTE_ENDPOINTS = {
+  alameda: { start: "-4.4253,36.7169", end: "-4.4103,36.7205" },   // Puente Tetuán a Plaza Torrijos
+  victoria: { start: "-4.4168,36.7237", end: "-4.4111,36.7278" },  // Plaza Merced a Victoria
+  maritimo: { start: "-4.4093,36.7188", end: "-4.3982,36.7215" },  // Farola a Baños del Carmen
+  carmen: { start: "-4.4300,36.7170", end: "-4.4235,36.7160" }     // Perchel a Muelle Heredia
+};
+
+// --- NUEVO: GENERADORES DE METADATOS REALISTAS PARA LOS POPUPS ---
+const busDestinations = ['El Palo', 'Alameda Principal', 'Teatinos', 'Ciudad Jardín', 'Campanillas', 'Huelin', 'Paseo del Parque'];
+const driverNames = ['Carlos R.', 'Lucía M.', 'Antonio G.', 'Marta F.', 'Javier L.', 'Elena S.', 'Miguel Á.', 'Sofía P.'];
+const vtcCars = ['Toyota Corolla', 'Skoda Superb', 'Kia Octavia', 'Tesla Model 3', 'Hyundai Kona'];
+const carColors = ['Negro', 'Blanco', 'Gris Oscuro', 'Azul Marino'];
+const plateLetters = ['LXT', 'KZZ', 'JTR', 'MDX', 'LMW', 'KPS'];
+
+const generateMetadata = (type, label) => {
+  const randomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+  const randomPlate = () => `${Math.floor(1000 + Math.random() * 9000)} ${randomItem(plateLetters)}`;
+
+  if (type === 'bus') {
+    return { destination: randomItem(busDestinations) };
+  }
+  if (type === 'metro') {
+    return { destination: label === 'Línea 1' ? 'Atarazanas / Andalucía Tech' : 'Guadalmedina / Palacio Deportes' };
+  }
+  if (type === 'taxi') {
+    return { 
+      driver: randomItem(driverNames), 
+      occupied: Math.random() > 0.4, // 60% de probabilidad de estar ocupado
+      license: randomPlate() 
+    };
+  }
+  if (type === 'vtc') {
+    return { 
+      driver: randomItem(driverNames), 
+      rating: (4.2 + Math.random() * 0.8).toFixed(1), // Nota entre 4.2 y 5.0
+      carModel: randomItem(vtcCars), 
+      carColor: randomItem(carColors), 
+      license: randomPlate() 
+    };
+  }
+  return {};
+};
+// --- FIN METADATOS ---
+
+let activeVehicles = [];
+let vehicleIdCounter = 1;
+let PATHS = {}; // Aquí guardaremos las geometrías reales descargadas
+
+// 1. FUNCIÓN: Añadir más puntos intermedios a la ruta de Mapbox para que el CSS sea suave
+const densifyPath = (coords) => {
+  const dense = [];
+  for (let i = 0; i < coords.length - 1; i++) {
+    const p1 = coords[i];
+    const p2 = coords[i + 1];
+    dense.push(p1);
+    
+    // Calculamos la distancia pitagórica simple
+    const dist = Math.sqrt(Math.pow(p2.lng - p1.lng, 2) + Math.pow(p2.lat - p1.lat, 2));
+    // Añadimos un punto intermedio para que el coche avance poco a poco
+    const steps = Math.ceil(dist / 0.0001); 
+    
+    for (let j = 1; j < steps; j++) {
+      dense.push({
+        lat: p1.lat + (p2.lat - p1.lat) * (j / steps),
+        lng: p1.lng + (p2.lng - p1.lng) * (j / steps)
+      });
+    }
+  }
+  dense.push(coords[coords.length - 1]);
+  return [...dense, ...dense.slice().reverse()]; // Ida y vuelta infinita
+};
+
+// 2. FUNCIÓN: Descargar la ruta real de las calles desde Mapbox
+const fetchRealStreetPath = async (startCoords, endCoords) => {
+  try {
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${startCoords};${endCoords}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    
+    if (data.routes && data.routes.length > 0) {
+      // Mapbox devuelve [lng, lat], lo pasamos a {lat, lng} para nuestro frontend
+      const rawCoords = data.routes[0].geometry.coordinates.map(c => ({ lng: c[0], lat: c[1] }));
+      return densifyPath(rawCoords);
+    }
+  } catch (error) {
+    console.error("Error obteniendo ruta real de Mapbox:", error);
+  }
+  return []; // Fallback seguro en caso de error
+};
+
+// --- ACTUALIZADO: Añadimos la llamada a generateMetadata() ---
+const createVehicle = (type, label, path, color) => ({
+  id: `${type}-${vehicleIdCounter++}`,
+  type, label, color, path,
+  currentStep: Math.floor(Math.random() * path.length), // Nacen en un punto aleatorio del trayecto
+  lat: 0, lng: 0,
+  metadata: generateMetadata(type, label) // Inyectamos los datos en el momento de crear el vehículo
+});
+
+// 3. INICIALIZADOR ASÍNCRONO DEL MOTOR
+const initSimulation = async () => {
+  console.log("🗺️ Descargando red de calles reales desde Mapbox...");
+  
+  PATHS.alameda = await fetchRealStreetPath(ROUTE_ENDPOINTS.alameda.start, ROUTE_ENDPOINTS.alameda.end);
+  PATHS.victoria = await fetchRealStreetPath(ROUTE_ENDPOINTS.victoria.start, ROUTE_ENDPOINTS.victoria.end);
+  PATHS.maritimo = await fetchRealStreetPath(ROUTE_ENDPOINTS.maritimo.start, ROUTE_ENDPOINTS.maritimo.end);
+  PATHS.carmen = await fetchRealStreetPath(ROUTE_ENDPOINTS.carmen.start, ROUTE_ENDPOINTS.carmen.end);
+
+  // Si no tenemos token, ponemos un aviso para que no explote
+  if (!PATHS.alameda || PATHS.alameda.length === 0) {
+    console.log("⚠️ No se pudo cargar Mapbox en el servidor. Revisa el MAPBOX_TOKEN en el .env");
+    return;
+  }
+
+  // Poblamos los vehículos usando las rutas reales descargadas
+  activeVehicles.push(createVehicle('metro', 'Línea 1', PATHS.carmen, 'bg-emerald-500'));
+  activeVehicles.push(createVehicle('metro', 'Línea 2', PATHS.carmen, 'bg-emerald-500'));
+
+  for(let i=1; i<=6; i++) activeVehicles.push(createVehicle('bus', `Línea ${i}`, PATHS.alameda, 'bg-blue-500'));
+  for(let i=7; i<=10; i++) activeVehicles.push(createVehicle('bus', `Línea ${i}`, PATHS.victoria, 'bg-blue-500'));
+  
+  for(let i=1; i<=3; i++) activeVehicles.push(createVehicle('vtc', `Uber ${i}`, PATHS.maritimo, 'bg-slate-900'));
+  for(let i=4; i<=5; i++) activeVehicles.push(createVehicle('vtc', `Cabify ${i}`, PATHS.carmen, 'bg-slate-900'));
+  
+  for(let i=1; i<=5; i++) activeVehicles.push(createVehicle('taxi', `Taxi ${i}`, PATHS.alameda, 'bg-yellow-400'));
+
+  console.log("✅ Simulación iniciada con vehículos anclados a las calles reales.");
+};
+
+// Arrancamos la descarga de datos al iniciar el servidor
+initSimulation();
+
+// --- LÓGICA DE WEBSOCKETS ---
 io.on('connection', (socket) => {
   console.log(`🔌 Nuevo cliente conectado (ID: ${socket.id})`);
-  socket.emit('vehiclesUpdate', DUMMY_VEHICLES);
+  
+  // Enviamos los vehículos de inmediato al conectar
+  socket.emit('vehiclesUpdate', activeVehicles);
+
+  // ESCUCHAMOS SI EL USUARIO PIDE VEHÍCULOS CERCA DE SU UBICACIÓN
+  socket.on('spawnNearMe', async (coords) => {
+    console.log(`📍 Usuario pidió vehículos cerca de: ${coords.lat}, ${coords.lng}`);
+    
+    // Si el usuario pide vehículos, creamos una ruta real dinámica desde su ubicación hasta el centro
+    const userCoords = `${coords.lng},${coords.lat}`;
+    const dynamicPath = await fetchRealStreetPath(userCoords, ROUTE_ENDPOINTS.alameda.end);
+    
+    if (dynamicPath.length > 0) {
+      activeVehicles.push(createVehicle('taxi', 'Taxi Cercano', dynamicPath, 'bg-yellow-400'));
+      activeVehicles.push(createVehicle('vtc', 'VTC Cercano', dynamicPath, 'bg-slate-900'));
+      
+      // Forzamos actualización inmediata para que los vea aparecer
+      io.emit('vehiclesUpdate', activeVehicles);
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log(`❌ Cliente desconectado (ID: ${socket.id})`);
   });
 });
 
-// EL MOTOR DE MOVIMIENTO
+// EL MOTOR DE MOVIMIENTO (2 segundos)
 setInterval(() => {
-  DUMMY_VEHICLES.forEach(vehicle => {
-    const deltaLat = (Math.random() - 0.5) * 0.0005; 
-    const deltaLng = (Math.random() - 0.5) * 0.0005;
-    vehicle.lat += deltaLat;
-    vehicle.lng += deltaLng;
+  if (activeVehicles.length === 0) return; // Esperamos a que se descarguen las rutas
+
+  activeVehicles.forEach(vehicle => {
+    if (vehicle.path && vehicle.path.length > 0) {
+      vehicle.lat = vehicle.path[vehicle.currentStep].lat;
+      vehicle.lng = vehicle.path[vehicle.currentStep].lng;
+      vehicle.currentStep = (vehicle.currentStep + 1) % vehicle.path.length;
+    }
   });
-  io.emit('vehiclesUpdate', DUMMY_VEHICLES);
-}, 2000);
+  
+  io.emit('vehiclesUpdate', activeVehicles);
+}, 2000); 
 
-
+// ==========================================
 // --- RUTAS REST CLÁSICAS (ENDPOINTS) ---
+// ==========================================
+
 app.get('/api/status', (req, res) => {
   res.json({ status: 'Online', message: 'Bienvenido al backend de CityPulse 🚀' });
 });
 
-app.get('/api/vehicles', (req, res) => {
-  res.json(DUMMY_VEHICLES);
-});
-
-// --- RUTA: REGISTRO DE USUARIOS (ACTUALIZADA CON EMAIL) ---
+// --- RUTA: REGISTRO DE USUARIOS ---
 app.post('/api/auth/register', async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -111,21 +263,18 @@ app.post('/api/auth/register', async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // 1. Generamos un token de activación
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
-    // 2. Creamos el usuario DESACTIVADO
     const newUser = await prisma.user.create({
       data: {
         name: name,
         email: email,
         password: hashedPassword,
         verificationToken: verificationToken,
-        isActive: false // El usuario no puede entrar hasta que confirme
+        isActive: false 
       }
     });
 
-    // 3. Enviamos el correo de confirmación
     const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
     
     const mailOptions = {
@@ -159,7 +308,7 @@ app.post('/api/auth/register', async (req, res) => {
   }
 });
 
-// --- NUEVA RUTA: VERIFICAR EMAIL ---
+// --- RUTA: VERIFICAR EMAIL ---
 app.get('/api/auth/verify-email', async (req, res) => {
   try {
     const { token } = req.query;
@@ -176,7 +325,7 @@ app.get('/api/auth/verify-email', async (req, res) => {
       where: { id: user.id },
       data: { 
         isActive: true, 
-        verificationToken: null // Limpiamos el token una vez usado por seguridad
+        verificationToken: null 
       }
     });
 
@@ -187,7 +336,7 @@ app.get('/api/auth/verify-email', async (req, res) => {
   }
 });
 
-// --- RUTA: INICIO DE SESIÓN (ACTUALIZADA) ---
+// --- RUTA: INICIO DE SESIÓN ---
 app.post('/api/auth/login', async (req, res) => {
   try {
     const { identifier, password } = req.body;
@@ -211,7 +360,6 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Usuario, correo o contraseña incorrectos.' });
     }
 
-    // BLOQUEO: Si la cuenta no está activa, no le dejamos pasar
     if (!user.isActive) {
       return res.status(403).json({ error: 'Debes confirmar tu cuenta revisando tu correo antes de poder entrar.' });
     }
@@ -286,20 +434,16 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       return res.status(200).json({ message: 'Si el correo existe, recibirás instrucciones.' });
     }
 
-    // 1. Generamos token seguro y caducidad (1 hora)
     const resetToken = crypto.randomBytes(32).toString('hex');
     const resetTokenExpiry = new Date(Date.now() + 3600000); 
 
-    // 2. Guardamos en Supabase
     await prisma.user.update({
       where: { email },
       data: { resetToken, resetTokenExpiry }
     });
 
-    // 3. Generamos el enlace para el frontend
     const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
 
-    // 4. Preparamos el correo en HTML
     const mailOptions = {
       from: `"CityPulse" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -320,7 +464,6 @@ app.post('/api/auth/forgot-password', async (req, res) => {
       `
     };
 
-    // 5. Enviamos el correo con nodemailer
     await transporter.sendMail(mailOptions);
     console.log(`✅ Correo de recuperación enviado correctamente a ${email}`);
 
@@ -421,15 +564,14 @@ app.get('/api/auth/confirm-delete', async (req, res) => {
 
     if (!user) return res.status(400).json({ error: 'El enlace ha caducado o es inválido.' });
 
-    // EL TRUCO DEL PROFESOR: Anonimizamos al usuario en vez de borrarlo
     await prisma.user.update({
       where: { id: user.id },
       data: { 
         name: 'Usuario Eliminado',
-        email: `deleted_${user.id}@citypulse.local`, // Liberamos su email real
+        email: `deleted_${user.id}@citypulse.local`, 
         username: null,
         avatar: null,
-        password: '', // Borramos su contraseña
+        password: '', 
         isActive: false,
         deleteToken: null,
         deleteTokenExpiry: null
@@ -439,6 +581,66 @@ app.get('/api/auth/confirm-delete', async (req, res) => {
     res.status(200).json({ message: 'Cuenta eliminada con éxito.' });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar la cuenta.' });
+  }
+});
+
+// ==========================================
+// --- RUTAS: GESTIÓN DE TRAYECTOS ---
+// ==========================================
+
+// 1. GUARDAR UNA NUEVA RUTA
+app.post('/api/routes', async (req, res) => {
+  try {
+    const { name, originLat, originLng, destLat, destLng, distance, duration, userId } = req.body;
+    
+    const newRoute = await prisma.route.create({
+      data: {
+        name,
+        originLat,
+        originLng,
+        destLat,
+        destLng,
+        distance: parseFloat(distance),
+        duration: parseInt(duration),
+        userId
+      }
+    });
+
+    res.status(201).json(newRoute);
+  } catch (error) {
+    console.error("Error al guardar la ruta:", error);
+    res.status(500).json({ error: 'Error al guardar la ruta en la base de datos.' });
+  }
+});
+
+// 2. OBTENER LAS RUTAS DE UN USUARIO
+app.get('/api/routes/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const routes = await prisma.route.findMany({
+      where: { userId: userId },
+      orderBy: { createdAt: 'desc' } 
+    });
+    
+    res.status(200).json(routes);
+  } catch (error) {
+    console.error("Error al obtener rutas:", error);
+    res.status(500).json({ error: 'Error al obtener tus rutas.' });
+  }
+});
+
+// 3. BORRAR UNA RUTA
+app.delete('/api/routes/:routeId', async (req, res) => {
+  try {
+    const { routeId } = req.params;
+    await prisma.route.delete({
+      where: { id: routeId }
+    });
+    
+    res.status(200).json({ message: 'Ruta eliminada correctamente.' });
+  } catch (error) {
+    console.error("Error al borrar ruta:", error);
+    res.status(500).json({ error: 'Error al eliminar la ruta.' });
   }
 });
 

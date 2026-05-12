@@ -2,26 +2,36 @@
 
 **CityPulse** es una aplicación web Full-Stack desarrollada para centralizar y visualizar en tiempo real diferentes medios de transporte urbano (EMT, Metro, VTC, Taxis) en un único mapa interactivo.
 
-> **Nota:** Esta es la versión **MVP Funcional**. Incluye la Landing Page animada y el núcleo principal de la aplicación: un mapa interactivo conectado por WebSockets a un servidor Node.js que transmite datos de flotas en tiempo real, junto con geolocalización del usuario.
+> **Nota:** Esta versión incluye la **Gestión Completa de Usuarios y Seguridad** junto al núcleo principal de la aplicación: un mapa interactivo conectado por WebSockets a un servidor Node.js que transmite datos de flotas en tiempo real, geolocalización del usuario y un sistema de autenticación robusto con envío de correos reales.
 
 ---
 
 ## 🛠️ Stack Tecnológico
-* **Frontend:** React, Vite, TailwindCSS (v3), Lucide React.
+* **Frontend:** React, Vite, TailwindCSS (v3), Lucide React, React Router.
 * **Mapas y UI:** Mapbox GL JS (`react-map-gl`), Popups interactivos.
 * **Animaciones:** GSAP + ScrollTrigger (Landing Page).
-* **Backend:** Node.js, Express, CORS.
+* **Backend:** Node.js, Express, CORS, API Mapbox Directions (en caché).
+* **Base de Datos:** PostgreSQL (alojada en Supabase) + **Prisma ORM**.
 * **Tiempo Real:** **Socket.IO** (Comunicación bidireccional cliente-servidor).
+* **Seguridad y Auth:** `bcrypt` (encriptación), `crypto` (tokens seguros), `nodemailer` (envío de emails reales).
 * **Gestor de paquetes:** `pnpm`.
 
 ---
 
-## 🚀 Novedades de esta Versión (Motor de Tiempo Real)
-1. **Conexión WebSockets (Socket.IO):** El servidor backend cuenta ahora con un motor que emite las coordenadas de los vehículos constantemente, permitiendo que el cliente reaccione sin necesidad de recargar la página (polling).
-2. **Movimiento Fluido (Interpolación):** Implementación de transiciones CSS lineales para que los vehículos se deslicen suavemente por el mapa entre coordenada y coordenada.
-3. **Geolocalización del Usuario:** Integración con la API nativa del navegador para ubicar al usuario en el mapa mediante una animación "Fly-To" y un marcador de pulso de radar.
-4. **Filtrado Dinámico en Vivo:** Panel de control interactivo que permite encender y apagar capas de transporte (solo EMT, solo VTC, etc.) renderizando el mapa al instante mediante estados de React.
-5. **Popups Inteligentes:** Sistema de detalles al hacer clic en los vehículos que sigue al marcador mientras este se desplaza.
+## 🚀 Novedades de esta Versión
+
+### 🔐 Sistema de Autenticación y Seguridad
+1. **Registro con Verificación:** Creación de cuentas con envío de correo real (Nodemailer) para activar la cuenta mediante token seguro.
+2. **Recuperación de Contraseña:** Flujo completo de "He olvidado mi contraseña" con enlaces de un solo uso y caducidad de 1 hora.
+3. **Gestión de Perfil:** Panel privado para actualizar datos y subir una foto de perfil (convertida a Base64).
+4. **Cumplimiento RGPD (Borrado Lógico):** Sistema de eliminación de cuenta mediante "anonimización". Se borran los datos personales del usuario pero se mantienen sus estadísticas/rutas en la base de datos bajo un ID anónimo, previa confirmación por email.
+
+### 🗺️ Motor de Tiempo Real y Mapa Avanzado (Actualizado)
+1. **Simulación Realista de Flotas:** El backend consume la API de Mapbox Directions al arrancar para anclar los vehículos a las geometrías exactas de las calles reales, evitando que atraviesen edificios.
+2. **Movimiento Ultra-Fluido:** Densificación de coordenadas en el servidor sincronizadas con transiciones CSS en el cliente para un movimiento orgánico.
+3. **Popups Enriquecidos y Dinámicos:** Los vehículos muestran metadatos generados de forma realista (nombres de conductores, matrículas, valoraciones, estado libre/ocupado) según su tipo (Taxi, VTC, EMT).
+4. **Generación por Proximidad:** Al solicitar la ubicación, el servidor calcula mediante trigonometría la calle real más cercana y despliega vehículos de refuerzo patrullando esa zona.
+5. **Creación y Guardado de Rutas:** Panel interactivo para trazar rutas del Punto A al Punto B, calculando distancia y tiempo, con capacidad de guardarlas en la base de datos del usuario y visualizarlas desde su perfil.
 
 ---
 
@@ -29,7 +39,6 @@
 Para poder ejecutar este proyecto en tu máquina local, necesitarás tener instalado:
 1. [Node.js](https://nodejs.org/es/) (v18 o superior recomendado).
 2. **pnpm** (puedes instalarlo ejecutando `npm install -g pnpm` en tu terminal).
-3. Un token público gratuito de [Mapbox](https://www.mapbox.com/) para renderizar el mapa interactivo.
 
 ---
 
@@ -37,7 +46,7 @@ Para poder ejecutar este proyecto en tu máquina local, necesitarás tener insta
 
 El proyecto está dividido en dos servicios que deben ejecutarse simultáneamente: el **Backend** (puerto 3000) y el **Frontend** (puerto 5173).
 
-### Paso 1: Levantar el Backend (API REST)
+### Paso 1: Configurar y Levantar el Backend (API REST)
 Abre una terminal y ejecuta los siguientes comandos:
 
 ```bash
@@ -47,7 +56,11 @@ cd citypulse-backend
 # 2. Instala las dependencias
 pnpm install
 
-# 3. Inicia el servidor en modo desarrollo
+# 3. Sincroniza la base de datos con Prisma
+npx prisma generate
+npx prisma db push
+
+# 4. Inicia el servidor en modo desarrollo
 pnpm dev
 ```
 
@@ -79,13 +92,13 @@ pnpm dev
 ```
 
 🧪 Qué probar en esta revisión
-Landing Page: Scroll hacia abajo para ver el efecto paralaje/acercamiento de los vehículos con GSAP sobre el fondo de cristal (Glassmorphism).
+Flujo de Seguridad: Regístrate con un correo real. Comprueba que te llega el email de activación. Prueba a cerrar sesión y solicitar una recuperación de contraseña.
 
-Mapa Inmersivo: Ve a la pestaña "Mapa". Observa cómo los vehículos se mueven solos recibiendo los datos del backend.
+Gestión de Perfil y Rutas: Inicia sesión y ve al mapa. Abre el panel lateral, traza una ruta y guárdala. Luego, ve a "Mi Perfil", entra en la pestaña de Rutas y comprueba que puedes previsualizarla o eliminarla.
 
-Panel de Filtros: Usa el menú lateral izquierdo para ocultar los taxis o los VTC. El mapa se limpiará al instante.
+Simulación Realista: Acércate a la Alameda Principal o la Plaza de la Merced. Observa cómo los autobuses y VTCs trazan las curvas exactas de las calles. Haz clic en ellos para ver sus datos dinámicos simulados (matrículas, conductores, ocupación).
 
-Botón de Ubicación: Pulsa el icono de la diana (abajo a la derecha) y acepta los permisos del navegador para ver la animación de vuelo hacia tu ubicación real.
+Generación Dinámica: Pulsa el icono de la diana (abajo a la derecha) en el mapa y acepta los permisos para volar a tu ubicación real. El servidor generará instantáneamente Taxis y VTCs patrullando la calle real más cercana a ti.
 
 
 ### Autor: Rafael Macías Peláez

@@ -1,28 +1,51 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Map, LogOut, Camera, Lock, Mail, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { User, Map, LogOut, Camera, Lock, Mail, AlertCircle, CheckCircle2, Trash2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function ProfilePage() {
   const { user, isAuth, logout, updateUser } = useAuth();
   const navigate = useNavigate();
-  const fileInputRef = useRef(null); // Referencia para abrir el selector de archivos oculto
+  const fileInputRef = useRef(null);
   
   const [activeTab, setActiveTab] = useState('account');
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Estados del formulario (empezamos con los datos del usuario o vacío)
+  // Estados de rutas
+  const [savedRoutes, setSavedRoutes] = useState([]);
+  const [isLoadingRoutes, setIsLoadingRoutes] = useState(false);
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     username: user?.username || '',
     email: user?.email || '',
-    password: '', // Siempre vacío por seguridad
+    password: '',
   });
   
-  // Estado para la imagen
   const [avatarPreview, setAvatarPreview] = useState(user?.avatar || null);
+
+  // --- EFECTO PARA CARGAR LAS RUTAS ---
+  useEffect(() => {
+    if (activeTab === 'routes' && user?.id) {
+      const fetchRoutes = async () => {
+        setIsLoadingRoutes(true);
+        try {
+          const res = await fetch(`http://localhost:3000/api/routes/${user.id}`);
+          if (res.ok) {
+            const data = await res.json();
+            setSavedRoutes(data);
+          }
+        } catch (error) {
+          console.error("Error al cargar rutas del perfil", error);
+        } finally {
+          setIsLoadingRoutes(false);
+        }
+      };
+      fetchRoutes();
+    }
+  }, [activeTab, user?.id]);
 
   const handleLogout = () => {
     logout();
@@ -33,19 +56,17 @@ export default function ProfilePage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Cuando el usuario elige una foto, la convertimos a Base64
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setAvatarPreview(reader.result); // Esto guarda la imagen como un texto enorme
+        setAvatarPreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // El botón principal que alterna entre Editar y Guardar
   const handleEditToggle = async () => {
     if (!isEditing) {
       setIsEditing(true);
@@ -53,19 +74,18 @@ export default function ProfilePage() {
       return;
     }
 
-    // --- LÓGICA DE GUARDAR DATOS ---
     setIsLoading(true);
     try {
       const response = await fetch('http://localhost:3000/api/auth/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          id: user.id, // ¡Importante para saber a quién actualizamos!
+          id: user.id,
           name: formData.name,
           username: formData.username,
           email: formData.email,
           password: formData.password,
-          avatar: avatarPreview // Enviamos la imagen en Base64
+          avatar: avatarPreview
         }),
       });
 
@@ -73,10 +93,10 @@ export default function ProfilePage() {
 
       if (!response.ok) throw new Error(data.error || 'Error al actualizar');
 
-      updateUser(data.user); // Actualizamos el contexto y localStorage al instante
+      updateUser(data.user);
       setSuccessMsg('¡Datos actualizados con éxito!');
-      setIsEditing(false); // Salimos del modo edición
-      setFormData({ ...formData, password: '' }); // Limpiamos la contraseña por si la cambió
+      setIsEditing(false);
+      setFormData({ ...formData, password: '' });
 
     } catch (error) {
       alert(error.message);
@@ -97,7 +117,6 @@ export default function ProfilePage() {
     setSuccessMsg('');
   };
 
-  // --- LÓGICA PARA ELIMINAR CUENTA (NUEVO) ---
   const handleDeleteAccount = async () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Te enviaremos un correo para confirmar el borrado.')) {
       try {
@@ -117,6 +136,20 @@ export default function ProfilePage() {
         alert('Error de conexión al solicitar la eliminación.');
         console.log(error);
       }
+    }
+  };
+
+  // --- FUNCIÓN PARA BORRAR UNA RUTA DESDE EL PERFIL ---
+  const handleDeleteRoute = async (routeId) => {
+    if(!window.confirm("¿Estás seguro de borrar esta ruta definitivamente?")) return;
+    try {
+      const res = await fetch(`http://localhost:3000/api/routes/${routeId}`, { method: 'DELETE' });
+      if (res.ok) {
+        setSavedRoutes(savedRoutes.filter(r => r.id !== routeId));
+      }
+    } catch (error) {
+      alert("Error al borrar la ruta");
+      console.log(error);
     }
   };
 
@@ -176,7 +209,6 @@ export default function ProfilePage() {
                 
                 <div className="flex items-center gap-6 mb-8">
                   <div className="relative">
-                    {/* INPUT DE FOTO OCULTO */}
                     <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
                     
                     <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg bg-blue-50 flex items-center justify-center text-citypulse-blue overflow-hidden">
@@ -188,7 +220,7 @@ export default function ProfilePage() {
                     </div>
                     {isEditing && (
                       <button 
-                        onClick={() => fileInputRef.current.click()} // Abre el selector de archivos
+                        onClick={() => fileInputRef.current.click()} 
                         className="absolute bottom-0 right-0 p-2 bg-citypulse-blue text-white rounded-full shadow hover:bg-blue-700 transition-colors"
                       >
                         <Camera size={16} />
@@ -275,7 +307,6 @@ export default function ProfilePage() {
                   </div>
                 </form>
 
-                {/* --- ZONA PELIGROSA PARA ELIMINAR CUENTA --- */}
                 <div className="pt-8 border-t border-gray-200 mt-8">
                   <h3 className="text-lg font-bold text-red-600 mb-2">Zona Peligrosa</h3>
                   <p className="text-sm text-gray-500 mb-4">
@@ -293,17 +324,45 @@ export default function ProfilePage() {
             )}
 
             {activeTab === 'routes' && (
-              <div className="animate-fade-in text-center py-16">
-                <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-citypulse-blue">
-                  <Map size={32} />
+              <div className="animate-fade-in">
+                <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <Map className="text-citypulse-blue" /> Mis Rutas Guardadas
+                  </h2>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Tus Rutas</h2>
-                <p className="text-gray-500 max-w-sm mx-auto">
-                  Aún no has guardado ninguna ruta. ¡Ve al mapa interactivo y empieza a explorar la ciudad!
-                </p>
-                <Link to="/map" className="mt-6 inline-flex items-center gap-2 text-citypulse-blue font-bold hover:underline">
-                  Ir al Mapa →
-                </Link>
+
+                {isLoadingRoutes ? (
+                  <div className="text-center py-12 text-gray-400">Cargando tus rutas...</div>
+                ) : savedRoutes.length === 0 ? (
+                  <div className="text-center py-16">
+                    <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-citypulse-blue">
+                      <Map size={32} />
+                    </div>
+                    <p className="text-gray-500 max-w-sm mx-auto">Aún no has guardado ninguna ruta. ¡Ve al mapa interactivo y empieza a explorar la ciudad!</p>
+                    <Link to="/map" className="mt-6 inline-flex items-center gap-2 text-citypulse-blue font-bold hover:underline">Ir al Mapa →</Link>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {savedRoutes.map(route => (
+                      <div key={route.id} className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow relative group">
+                        <h4 className="font-bold text-gray-900 mb-1 pr-8">{route.name}</h4>
+                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                          <span className="bg-blue-50 text-blue-700 py-0.5 px-2 rounded-md font-semibold">{route.distance} km</span>
+                          <span className="bg-emerald-50 text-emerald-700 py-0.5 px-2 rounded-md font-semibold">{route.duration} min</span>
+                        </div>
+                        <p className="text-xs text-gray-400">Guardada el: {new Date(route.createdAt).toLocaleDateString()}</p>
+                        
+                        <button 
+                          onClick={() => handleDeleteRoute(route.id)}
+                          className="absolute top-4 right-4 text-gray-300 hover:text-red-500 hover:bg-red-50 p-1.5 rounded-lg transition-colors"
+                          title="Eliminar ruta"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
