@@ -11,15 +11,20 @@ function ActivityIcon() {
   );
 }
 
+/**
+ * Global Navigation Bar Component.
+ * Handles primary routing links and user session interactions (login/logout/profile).
+ */
 export default function Navbar() {
   const { isAuth, user, logout } = useAuth();
   const navigate = useNavigate();
   
-  // Estados para el desplegable
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  // Efecto para cerrar el desplegable si hacemos clic fuera de él
+  /**
+   * Closes the user profile dropdown when clicking outside its referencing node.
+   */
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -52,7 +57,7 @@ export default function Navbar() {
         
         {isAuth ? (
           <div className="relative" ref={dropdownRef}>
-            {/* BOTÓN DEL AVATAR */}
+            {/* User Profile Toggle */}
             <button 
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               className="flex items-center gap-2 focus:outline-none"
@@ -66,7 +71,7 @@ export default function Navbar() {
               </div>
             </button>
 
-            {/* MENÚ DESPLEGABLE */}
+            {/* User Dropdown Menu */}
             {isDropdownOpen && (
               <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 animate-fade-in z-50">
                 <div className="px-4 py-3 border-b border-gray-100">

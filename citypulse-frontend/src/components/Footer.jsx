@@ -1,20 +1,23 @@
 import { Link, useLocation } from 'react-router-dom';
 import { Code, Activity } from 'lucide-react';
 
+/**
+ * Global Footer Component.
+ * Contains navigation links, brand information, and legal disclaimers.
+ * Remains hidden on the map view to maximize application viewport area.
+ */
 export default function Footer() {
   const location = useLocation();
 
-  // LA MAGIA: Si la ruta actual es "/map", devolvemos "null" (no pintamos nada)
   if (location.pathname === '/map') {
     return null;
   }
 
-  // Si es cualquier otra ruta, pintamos el footer
   return (
     <footer className="bg-gray-900 text-gray-400 py-12 border-t border-gray-800">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* Columna 1: Marca y Descripción */}
+        {/* Brand & Description */}
         <div className="flex flex-col">
           <Link to="/" className="flex items-center gap-2 text-white text-xl font-bold mb-4">
             <Activity className="text-blue-500" />
@@ -25,7 +28,7 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Columna 2: Enlaces Rápidos */}
+        {/* Quick Links */}
         <div className="flex flex-col">
           <h3 className="text-white font-semibold mb-4">Enlaces Rápidos</h3>
           <ul className="space-y-2 text-sm">
@@ -36,7 +39,7 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Columna 3: Proyecto y Contacto */}
+        {/* Project Context & Contact */}
         <div className="flex flex-col">
           <h3 className="text-white font-semibold mb-4">Sobre el Proyecto</h3>
           <ul className="space-y-2 text-sm">
@@ -58,7 +61,7 @@ export default function Footer() {
 
       </div>
 
-      {/* Barra inferior de Copyright y Legal */}
+      {/* Copyright & Legal Bar */}
       <div className="max-w-7xl mx-auto px-6 mt-12 pt-8 border-t border-gray-800 text-sm flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-center md:text-left">
           © {new Date().getFullYear()} Rafael Macías Peláez. Todos los derechos reservados.

@@ -2,28 +2,37 @@ import { useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Lock, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 
+/**
+ * Password Reset Component.
+ * Validates the security token and dispatches the new password payload.
+ */
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
-  // Extraemos el token mágico de la URL (ej: ?token=a1b2c3...)
+  // Extract security token from URL parameters
   const token = searchParams.get('token');
 
+  // Form State
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   
+  // UI Feedback State
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
+  /**
+   * Handles the submission of the new password.
+   */
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setErrorMsg('');
     setSuccessMsg('');
 
-    // 1. Validaciones básicas en el frontend
+    // Client-side validation
     if (!token) {
       setErrorMsg('Enlace no válido. Vuelve a solicitar el cambio de contraseña.');
       setIsLoading(false);
@@ -42,7 +51,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    // 2. Enviamos la petición al backend
+    // Dispatch reset request to backend
     try {
       const response = await fetch('http://localhost:3000/api/auth/reset-password', {
         method: 'POST',
@@ -56,10 +65,9 @@ export default function ResetPasswordPage() {
         throw new Error(data.error || 'Error al restablecer la contraseña');
       }
 
-      // 3. ¡Éxito!
+      // Handle success and initialize redirect
       setSuccessMsg('¡Contraseña actualizada con éxito! Redirigiendo al inicio de sesión...');
       
-      // Esperamos 2 segundos para que lea el mensaje y lo mandamos al login
       setTimeout(() => {
         navigate('/login');
       }, 2000);
@@ -71,7 +79,7 @@ export default function ResetPasswordPage() {
     }
   };
 
-  // Si alguien entra a la página sin un token en la URL, le avisamos
+  // Guard clause for missing tokens
   if (!token) {
     return (
       <div className="min-h-[calc(100vh-76px)] flex items-center justify-center bg-gray-50 py-12 px-4">
@@ -111,7 +119,7 @@ export default function ResetPasswordPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             
-            {/* INPUT NUEVA CONTRASEÑA */}
+            {/* New Password Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Nueva Contraseña</label>
               <div className="relative">
@@ -125,7 +133,7 @@ export default function ResetPasswordPage() {
               </div>
             </div>
 
-            {/* INPUT CONFIRMAR CONTRASEÑA */}
+            {/* Confirm Password Input */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Confirmar Contraseña</label>
               <div className="relative">

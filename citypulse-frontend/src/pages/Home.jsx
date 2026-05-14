@@ -12,33 +12,35 @@ import miFoto from '../assets/mi-foto.jpg';
 
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * Landing Page Component.
+ * Displays value propositions and features scroll-linked GSAP animations.
+ */
 export default function Home() {
   const mainContainer = useRef(null);
   const heroRef = useRef(null);
 
   useGSAP(() => {
-    // Animación del Hero vinculada al scroll
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: heroRef.current,
-        start: "top top",      // Empieza cuando el hero toca el tope
-        end: "bottom top",     // Termina cuando el hero sale de la pantalla
-        scrub: 1,              // El 1 hace que la animación siga suavemente el scroll
+        start: "top top",
+        end: "bottom top",
+        scrub: 1,
       }
     });
 
-    // Movimiento del Autobús: entra por la izquierda y se hace grande
+    // Inward scale animations for transport assets
     tl.to(".bus-anim", {
-      x: 300,        // Se mueve a la derecha
-      y: 50,         // Baja un poco
-      scale: 2.5,    // Se acerca al usuario
-      opacity: 0,    // Se desvanece al salir
+      x: 300,
+      y: 50,
+      scale: 2.5,
+      opacity: 0,
       ease: "none"
     }, 0);
 
-    // Movimiento del Metro: entra por la derecha y se hace grande
     tl.to(".metro-anim", {
-      x: -300,       // Se mueve a la izquierda
+      x: -300,
       y: 50,
       scale: 2.5,
       opacity: 0,
@@ -48,27 +50,23 @@ export default function Home() {
   }, { scope: mainContainer });
 
   return (
-    // Contenedor principal sin altura fija para permitir scroll
     <div ref={mainContainer} className="flex flex-col bg-white">
       
-      {/* 1. SECCIÓN HERO CON MAPA DE FONDO */}
+      {/* Hero Section */}
       <section 
         ref={heroRef} 
-        // Eliminamos el bg-gray-50 y añadimos relative y overflow-hidden
         className="relative flex flex-col items-center justify-center min-h-[calc(100vh-76px)] overflow-hidden border-b border-gray-100 p-6"
       >
-        
-        {/* NUEVO: Capa 1 - La imagen del mapa de fondo */}
+        {/* Background layer */}
         <div 
           className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${bgMap})` }}
-        ></div>
+        />
 
-        {/* NUEVO: Capa 2 - Filtro semi-transparente y desenfoque (Glassmorphism) */}
-        {/* bg-white/80 la hace un 80% blanca, y backdrop-blur-sm difumina el mapa debajo */}
-        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-0"></div>
+        {/* Overlay glassmorphism layer */}
+        <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-0" />
 
-        {/* Capa 3: Contenedor de las imágenes animadas de GSAP (El bus y el metro) */}
+        {/* Animated graphics layer */}
         <div className="hidden md:flex absolute inset-0 pointer-events-none items-center justify-center overflow-hidden z-10">
           <img 
             src={busImg} 
@@ -82,7 +80,7 @@ export default function Home() {
           />
         </div>
 
-        {/* Capa 4: Contenido de Texto y Botones (Z-20 para que estén siempre arriba) */}
+        {/* Interactive content layer */}
         <div className="relative z-20 max-w-4xl text-center">
           <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight drop-shadow-sm">
             El pulso de tu ciudad, <br/>
@@ -102,7 +100,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 2. SECCIÓN INFO / CARACTERÍSTICAS */}
+      {/* Features Section */}
       <section className="py-24 px-6 max-w-7xl mx-auto w-full">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-extrabold text-gray-900">Una movilidad más inteligente</h2>
@@ -110,7 +108,6 @@ export default function Home() {
         </div>
         
         <div className="grid md:grid-cols-3 gap-8">
-          {/* Tarjeta 1 */}
           <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 bg-blue-50 text-citypulse-blue rounded-xl flex items-center justify-center mb-6">
               <Map size={24} />
@@ -121,7 +118,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Tarjeta 2 */}
           <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 bg-blue-50 text-citypulse-blue rounded-xl flex items-center justify-center mb-6">
               <Zap size={24} />
@@ -132,7 +128,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* Tarjeta 3 */}
           <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 hover:shadow-md transition-shadow">
             <div className="w-12 h-12 bg-blue-50 text-citypulse-blue rounded-xl flex items-center justify-center mb-6">
               <Smartphone size={24} />
@@ -145,11 +140,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. SECCIÓN SOBRE EL PROYECTO */}
+      {/* About Section */}
       <section className="py-24 bg-citypulse-blue text-white px-6">
         <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
           
-          {/* Avatar / Icono */}
           <div className="flex-shrink-0">
             <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white/20 shadow-xl">
               <img 
@@ -160,7 +154,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Texto de presentación */}
           <div>
             <h2 className="text-3xl font-extrabold mb-4">El proyecto detrás de CityPulse</h2>
             <p className="text-blue-50 text-lg mb-6 leading-relaxed">

@@ -2,12 +2,18 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
+/**
+ * Email Verification Handler Component.
+ * Processes the token from the URL parameters to activate a newly registered account.
+ */
 export default function VerifyEmailPage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
-  const [status, setStatus] = useState('loading'); // 'loading', 'success', 'error'
   
-  // NUEVO: Un "chivato" para saber si ya hemos hecho la petición
+  // Interaction state: 'loading' | 'success' | 'error'
+  const [status, setStatus] = useState('loading');
+  
+  // Guard reference to prevent duplicate API calls in React StrictMode
   const hasAttempted = useRef(false);
 
   useEffect(() => {
@@ -21,9 +27,8 @@ export default function VerifyEmailPage() {
       }
     };
 
-    // Solo hacemos el fetch si hay token Y si no lo hemos intentado ya
     if (token && !hasAttempted.current) {
-      hasAttempted.current = true; // Marcamos que ya lo estamos comprobando
+      hasAttempted.current = true;
       verify();
     }
   }, [token]);

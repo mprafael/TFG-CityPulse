@@ -11,13 +11,16 @@ import Navbar from './components/Navbar';
 import ConfirmDeletePage from './pages/ConfirmDeletePage';
 import TermsPage from './pages/TermsPage';
 
+/**
+ * Main Application Component.
+ * Initializes authentication context and defines the global routing structure.
+ */
 function App() {
   return (
     <AuthProvider>
       <Router>
         <div className="flex flex-col min-h-screen bg-gray-50">
           
-          {/* Aquí insertamos nuestro nuevo componente limpio */}
           <Navbar />
 
           <main className="flex-1 relative flex flex-col">

@@ -3,12 +3,16 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * Account Deletion Confirmation Component.
+ * Validates the deletion token and purges the user context upon success.
+ */
 export default function ConfirmDeletePage() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token');
   const [status, setStatus] = useState('loading');
   const hasAttempted = useRef(false);
-  const { logout } = useAuth(); // Para cerrar su sesión actual
+  const { logout } = useAuth(); 
 
   useEffect(() => {
     const confirmDelete = async () => {
@@ -16,7 +20,7 @@ export default function ConfirmDeletePage() {
         const res = await fetch(`http://localhost:3000/api/auth/confirm-delete?token=${token}`);
         if (res.ok) {
           setStatus('success');
-          logout(); // Cerramos su sesión automáticamente
+          logout(); // Clear active session context upon successful deletion
         } else {
           setStatus('error');
         }

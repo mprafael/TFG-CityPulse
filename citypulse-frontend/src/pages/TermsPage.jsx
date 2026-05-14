@@ -1,3 +1,7 @@
+/**
+ * Static Terms and Conditions page.
+ * Outlines application usage guidelines and data privacy policies.
+ */
 export default function TermsPage() {
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6">
