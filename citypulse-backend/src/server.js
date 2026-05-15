@@ -8,6 +8,7 @@ const { PrismaClient } = pkg;
 import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
 import nodemailer from 'nodemailer';
+import createAdminRoutes from './routes/adminRoutes.js';
 
 import { initSimulation, spawnVehiclesNear, updateSimulationState, getActiveVehicles } from './services/simulationEngine.js';
 import createAuthRoutes from './routes/authRoutes.js';
@@ -40,6 +41,7 @@ app.use(express.json({ limit: '10mb' }));
 // API Routes
 app.get('/api/status', (req, res) => res.json({ status: 'Online', service: 'CityPulse Backend' }));
 app.use('/api/auth', createAuthRoutes(prisma, transporter));
+app.use('/api/admin', createAdminRoutes(prisma));
 app.use('/api/routes', createMapRoutes(prisma));
 
 // WebSockets Setup

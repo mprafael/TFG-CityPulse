@@ -64,7 +64,12 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, isAuth: !!user, loading }}>
+    <AuthContext.Provider value={{ 
+      user, login, logout, updateUser, 
+      isAuth: !!user, 
+      isAdmin: user?.email === 'contacto.citypulse@gmail.com',
+      loading 
+    }}>
       {!loading && children}
     </AuthContext.Provider>
   );

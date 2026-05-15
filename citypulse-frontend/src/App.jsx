@@ -8,6 +8,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage';
 import Profile from './pages/Profile';
 import Footer from './components/Footer';
 import Navbar from './components/Navbar';
+import AdminPanel from './pages/AdminPanel';
 import ConfirmDeletePage from './pages/ConfirmDeletePage';
 import TermsPage from './pages/TermsPage';
 
@@ -32,6 +33,7 @@ function App() {
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/verify-email" element={<VerifyEmailPage />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/confirm-delete" element={<ConfirmDeletePage />} />
                 <Route path="/terminos" element={<TermsPage />} />
               </Routes>

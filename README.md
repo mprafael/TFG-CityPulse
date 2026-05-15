@@ -1,53 +1,64 @@
 # 🏙️ CityPulse - Plataforma de Transporte Urbano en Tiempo Real
 
-**CityPulse** es una aplicación web Full-Stack desarrollada para centralizar y visualizar en tiempo real diferentes medios de transporte urbano (EMT, Metro, VTC, Taxis) en un único mapa interactivo.
+**CityPulse** es una aplicación web Full-Stack desarrollada para centralizar y visualizar en tiempo real diferentes medios de transporte urbano (EMT, Metro, VTC, Taxis) en un único mapa interactivo. 
 
-> **Nota:** Esta versión incluye la **Gestión Completa de Usuarios y Seguridad** junto al núcleo principal de la aplicación: un mapa interactivo conectado por WebSockets a un servidor Node.js que transmite datos de flotas en tiempo real, geolocalización del usuario y un sistema de autenticación robusto con envío de correos reales.
-
----
-
-## 🛠️ Stack Tecnológico
-* **Frontend:** React, Vite, TailwindCSS (v3), Lucide React, React Router.
-* **Mapas y UI:** Mapbox GL JS (`react-map-gl`), Popups interactivos.
-* **Animaciones:** GSAP + ScrollTrigger (Landing Page).
-* **Backend:** Node.js, Express, CORS, API Mapbox Directions (en caché).
-* **Base de Datos:** PostgreSQL (alojada en Supabase) + **Prisma ORM**.
-* **Tiempo Real:** **Socket.IO** (Comunicación bidireccional cliente-servidor).
-* **Seguridad y Auth:** `bcrypt` (encriptación), `crypto` (tokens seguros), `nodemailer` (envío de emails reales).
-* **Gestor de paquetes:** `pnpm`.
+Este proyecto ha sido desarrollado como **Trabajo Fin de Grado (TFG)** para el ciclo de Desarrollo de Aplicaciones Web (2º DAW). Combina una arquitectura de microservicios, comunicación bidireccional por WebSockets, y un sistema robusto de autenticación y gestión de bases de datos.
 
 ---
 
-## 🚀 Novedades de esta Versión
+## ✨ Características Principales
 
-### 🔐 Sistema de Autenticación y Seguridad
-1. **Registro con Verificación:** Creación de cuentas con envío de correo real (Nodemailer) para activar la cuenta mediante token seguro.
-2. **Recuperación de Contraseña:** Flujo completo de "He olvidado mi contraseña" con enlaces de un solo uso y caducidad de 1 hora.
-3. **Gestión de Perfil:** Panel privado para actualizar datos y subir una foto de perfil (convertida a Base64).
-4. **Cumplimiento RGPD (Borrado Lógico):** Sistema de eliminación de cuenta mediante "anonimización". Se borran los datos personales del usuario pero se mantienen sus estadísticas/rutas en la base de datos bajo un ID anónimo, previa confirmación por email.
+### 🗺️ Motor de Tiempo Real y Simulación Avanzada
+* **Simulación Realista de Flotas:** El servidor Node.js consume la API de Mapbox Directions en caché para anclar los vehículos simulados a las geometrías exactas de las calles de Málaga, evitando colisiones con edificios.
+* **Movimiento Ultra-Fluido:** Densificación de coordenadas en el backend sincronizadas con transiciones CSS interpoladas en el cliente para un movimiento orgánico.
+* **Generación por Proximidad:** Al solicitar la geolocalización, el servidor calcula mediante trigonometría la calle real más cercana al usuario y despliega vehículos de refuerzo (taxis/VTCs) patrullando esa zona específica vía WebSockets.
+* **Popups Enriquecidos:** Los vehículos muestran metadatos generados dinámicamente (nombres de conductores, matrículas reales españolas, valoraciones, estado libre/ocupado) según su tipología.
 
-### 🗺️ Motor de Tiempo Real y Mapa Avanzado (Actualizado)
-1. **Simulación Realista de Flotas:** El backend consume la API de Mapbox Directions al arrancar para anclar los vehículos a las geometrías exactas de las calles reales, evitando que atraviesen edificios.
-2. **Movimiento Ultra-Fluido:** Densificación de coordenadas en el servidor sincronizadas con transiciones CSS en el cliente para un movimiento orgánico.
-3. **Popups Enriquecidos y Dinámicos:** Los vehículos muestran metadatos generados de forma realista (nombres de conductores, matrículas, valoraciones, estado libre/ocupado) según su tipo (Taxi, VTC, EMT).
-4. **Generación por Proximidad:** Al solicitar la ubicación, el servidor calcula mediante trigonometría la calle real más cercana y despliega vehículos de refuerzo patrullando esa zona.
-5. **Creación y Guardado de Rutas:** Panel interactivo para trazar rutas del Punto A al Punto B, calculando distancia y tiempo, con capacidad de guardarlas en la base de datos del usuario y visualizarlas desde su perfil.
+### 🔐 Seguridad y Autenticación
+* **Registro Verificado:** Creación de cuentas con envío de correos electrónicos reales (`nodemailer`) para la activación mediante tokens seguros.
+* **Recuperación de Contraseña:** Flujo completo de "He olvidado mi contraseña" con enlaces de un solo uso y caducidad temporal (1 hora).
+* **Cumplimiento RGPD (Borrado Lógico):** Sistema de eliminación de cuenta mediante "anonimización". Se purgan los datos personales (PII) pero se mantienen las estadísticas bajo un UUID anónimo, previa confirmación por email.
+* **Seguridad de Base de Datos:** Políticas RLS (*Row Level Security*) habilitadas en Supabase para bloquear accesos no autorizados a la API pública, forzando todo el tráfico a través del backend.
+
+### 👤 Panel de Usuario y Gestión de Rutas
+* **Dashboard Privado:** Interfaz para actualizar datos personales, subir avatar (Base64) y gestionar la seguridad de la cuenta.
+* **Routing Integrado:** Panel interactivo para trazar rutas, calculando distancia y tiempo estimado de llegada.
+* **Almacenamiento de Rutas:** Capacidad de guardar trayectos frecuentes en la base de datos relacional y previsualizarlos o eliminarlos directamente desde el perfil.
+
+---
+
+## 🛠️ Stack Tecnológico y Arquitectura
+
+El proyecto sigue los principios de **Clean Code** y **Separation of Concerns**, dividiendo la lógica de negocio, las rutas y la presentación visual.
+
+* **Frontend (Arquitectura Presentacional/Contenedor):**
+  * React, Vite, TailwindCSS (v3), Lucide React.
+  * Mapbox GL JS (`react-map-gl`).
+  * Animaciones: GSAP + ScrollTrigger.
+* **Backend (Arquitectura Modular):**
+  * Node.js, Express, CORS.
+  * **Tiempo Real:** Socket.IO.
+  * **Seguridad:** `bcrypt` (hashing), `crypto` (tokens), `nodemailer` (SMTP).
+* **Base de Datos & ORM:**
+  * PostgreSQL (Supabase).
+  * Prisma ORM (con `@prisma/adapter-pg`).
 
 ---
 
 ## ⚙️ Requisitos Previos
-Para poder ejecutar este proyecto en tu máquina local, necesitarás tener instalado:
-1. [Node.js](https://nodejs.org/es/) (v18 o superior recomendado).
-2. **pnpm** (puedes instalarlo ejecutando `npm install -g pnpm` en tu terminal).
+
+Para ejecutar este proyecto en local, necesitarás:
+1. [Node.js](https://nodejs.org/es/) (v18 o superior).
+2. **pnpm** (gestor de paquetes recomendado: `npm install -g pnpm`).
 
 ---
 
 ## 🚀 Guía de Instalación y Ejecución
 
-El proyecto está dividido en dos servicios que deben ejecutarse simultáneamente: el **Backend** (puerto 3000) y el **Frontend** (puerto 5173).
+El proyecto está dividido en dos servicios: el **Backend** (puerto 3000) y el **Frontend** (puerto 5173). Ambos deben estar en ejecución simultáneamente.
 
 ### Paso 1: Configurar y Levantar el Backend (API REST)
-Abre una terminal y ejecuta los siguientes comandos:
+Abre una terminal en la raíz del proyecto y ejecuta:
 
 ```bash
 # 1. Entra en la carpeta del servidor
@@ -84,22 +95,26 @@ Antes de arrancar el frontend, necesitas configurar la clave del mapa.
 VITE_MAPBOX_TOKEN=pk.tu_token_publico_de_mapbox_aqui
 
 Una vez creado el archivo .env, arranca la aplicación:
-### (Como ahora es una entrega para revision ya tiene un .env con mi API, obviamente de normal esto no se sube)
 
 ```bash
 # 3. Inicia el frontend en modo desarrollo
 pnpm dev
 ```
 
-🧪 Qué probar en esta revisión
-Flujo de Seguridad: Regístrate con un correo real. Comprueba que te llega el email de activación. Prueba a cerrar sesión y solicitar una recuperación de contraseña.
+🧪 Guía de Pruebas (Tribunal / Evaluadores)
+Para explorar todas las capacidades de la plataforma, se recomienda seguir este flujo:
 
-Gestión de Perfil y Rutas: Inicia sesión y ve al mapa. Abre el panel lateral, traza una ruta y guárdala. Luego, ve a "Mi Perfil", entra en la pestaña de Rutas y comprueba que puedes previsualizarla o eliminarla.
+Flujo de Seguridad: Regístrate con un correo electrónico real. Comprueba que recibes el email de activación. Cierra sesión y prueba el flujo de recuperación de contraseña.
 
-Simulación Realista: Acércate a la Alameda Principal o la Plaza de la Merced. Observa cómo los autobuses y VTCs trazan las curvas exactas de las calles. Haz clic en ellos para ver sus datos dinámicos simulados (matrículas, conductores, ocupación).
+Simulación Realista: Navega por el mapa hacia la "Alameda Principal" o "Plaza de la Merced". Observa cómo la flota se ciñe a la geometría exacta de las calles. Haz clic en los vehículos para ver sus metadatos dinámicos (matrículas, conductores, ocupación).
 
-Generación Dinámica: Pulsa el icono de la diana (abajo a la derecha) en el mapa y acepta los permisos para volar a tu ubicación real. El servidor generará instantáneamente Taxis y VTCs patrullando la calle real más cercana a ti.
+Generación Dinámica: Haz clic en el botón de geolocalización (icono de diana abajo a la derecha). El servidor detectará tu ubicación real e inyectará de inmediato vehículos VTC y Taxis patrullando las calles aledañas a tu posición.
+
+Gestión de Perfil: Traza una ruta mediante el panel lateral izquierdo del mapa, guárdala y dirígete a "Mi Perfil". Comprueba la persistencia de datos (actualización de avatar, visualización de rutas almacenadas y opción de borrado lógico de la cuenta).
+
+5. **Panel de Administración (Autorización):** El sistema cuenta con un control de roles basado en Middleware. Para probarlo, regístrate o inicia sesión utilizando el correo maestro `contacto.citypulse@gmail.com`. Al hacerlo, la interfaz revelará un acceso restringido al "Panel de Administración" desde el menú del perfil, permitiendo visualizar la base de datos completa de usuarios y forzar el borrado de cuentas de prueba.
 
 
 ### Autor: Rafael Macías Peláez
 ### Curso: 2º DAW - IES Portada Alta (2025/2026)
+### Contacto / GitHub: @mprafael

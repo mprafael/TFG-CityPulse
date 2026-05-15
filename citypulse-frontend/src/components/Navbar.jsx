@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Map, User, LogIn, Home as HomeIcon, LogOut, Settings } from 'lucide-react';
+import { Map, User, LogIn, Home as HomeIcon, LogOut, Settings, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 function ActivityIcon() {
@@ -16,7 +16,7 @@ function ActivityIcon() {
  * Handles primary routing links and user session interactions (login/logout/profile).
  */
 export default function Navbar() {
-  const { isAuth, user, logout } = useAuth();
+  const { isAuth, user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
   
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -88,6 +88,18 @@ export default function Navbar() {
                     <Settings size={16} /> Ajustes del Perfil
                   </Link>
                 </div>
+
+                {isAdmin && (
+                  <div className="border-t border-gray-100 py-1">
+                    <Link 
+                      to="/admin" 
+                      onClick={() => setIsDropdownOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2 text-sm text-purple-700 font-bold hover:bg-purple-50 transition-colors"
+                    >
+                      <ShieldAlert size={16} /> Panel de Administración
+                    </Link>
+                  </div>
+                )}
                 
                 <div className="border-t border-gray-100 py-1">
                   <button 
