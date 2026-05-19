@@ -28,9 +28,13 @@ const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
   port: 465,
   secure: true, // SSL/TLS
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+  // Forzar resolución por IPv4 para evitar el error ENETUNREACH en Render
+  tls: {
+    rejectUnauthorized: false
+  },
+  family: 4 
 });
-
 transporter.verify().then(() => {
   console.log('[SMTP] Service ready.');
 }).catch((error) => console.error('[SMTP] Connection error:', error));
