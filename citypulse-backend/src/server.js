@@ -25,8 +25,13 @@ const prisma = new PrismaClient({ adapter });
 
 // Email Service Initialization
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS }
+  host: '142.250.110.108', // IP fija de smtp.gmail.com para forzar IPv4 y evitar bloqueos
+  port: 587,
+  secure: false, // Obligatorio para el puerto 587
+  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
+  tls: {
+    rejectUnauthorized: false
+  }
 });
 
 transporter.verify().then(() => {
