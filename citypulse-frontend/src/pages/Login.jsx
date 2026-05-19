@@ -7,6 +7,9 @@ import { useAuth } from '../context/AuthContext';
 import AuthInputs from '../components/auth/AuthInputs';
 import OAuthProviders from '../components/auth/OAuthProviders';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Authentication Page.
  * Handles Login, Registration, Password Recovery and Success feedback views.
@@ -45,7 +48,7 @@ export default function LoginPage() {
 
     try {
       if (authMode === 'register') {
-        const response = await fetch('http://localhost:3000/api/auth/register', {
+        const response = await fetch(`${API_URL}/api/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name, email, password }),
@@ -57,7 +60,7 @@ export default function LoginPage() {
         setSuccessMsg('Hemos enviado un correo de confirmación para activar tu cuenta.');
 
       } else if (authMode === 'login') {
-        const response = await fetch('http://localhost:3000/api/auth/login', {
+        const response = await fetch(`${API_URL}/api/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ identifier, password }),
@@ -70,7 +73,7 @@ export default function LoginPage() {
         setTimeout(() => navigate('/profile'), 1000);
 
       } else if (authMode === 'forgot') {
-        const response = await fetch('http://localhost:3000/api/auth/forgot-password', {
+        const response = await fetch(`${API_URL}/api/auth/forgot-password`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email }), 

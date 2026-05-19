@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Lock, ArrowRight, Eye, EyeOff, AlertCircle, CheckCircle2 } from 'lucide-react';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Password Reset Component.
  * Validates the security token and dispatches the new password payload.
@@ -53,7 +56,7 @@ export default function ResetPasswordPage() {
 
     // Dispatch reset request to backend
     try {
-      const response = await fetch('http://localhost:3000/api/auth/reset-password', {
+      const response = await fetch(`${API_URL}/api/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, newPassword: password }),

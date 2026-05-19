@@ -3,6 +3,9 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Account Deletion Confirmation Component.
  * Validates the deletion token and purges the user context upon success.
@@ -17,7 +20,7 @@ export default function ConfirmDeletePage() {
   useEffect(() => {
     const confirmDelete = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/auth/confirm-delete?token=${token}`);
+        const res = await fetch(`${API_URL}/api/auth/confirm-delete?token=${token}`);
         if (res.ok) {
           setStatus('success');
           logout(); // Clear active session context upon successful deletion

@@ -10,7 +10,8 @@ import MapControlPanel from '../components/MapControlPanel';
 import VehiclePopup from '../components/VehiclePopup';
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
-const socket = io('http://localhost:3000');
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const socket = io(API_URL);
 
 /**
  * Main application map interface.
@@ -70,7 +71,7 @@ export default function MapPage() {
     const fetchSavedRoutes = async () => {
       if (!isAuth || !user?.id) return;
       try {
-        const res = await fetch(`http://localhost:3000/api/routes/${user.id}`);
+        const res = await fetch(`${API_URL}/api/routes/${user.id}`);
         if (res.ok) {
           const data = await res.json();
           setSavedRoutes(data);
@@ -160,7 +161,7 @@ export default function MapPage() {
     if (!routeName.trim()) return alert("Por favor, ponle un nombre a tu ruta.");
     setIsSaving(true);
     try {
-      const res = await fetch('http://localhost:3000/api/routes', {
+      const res = await fetch(`${API_URL}/api/routes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -187,7 +188,7 @@ export default function MapPage() {
   const handleDeleteRoute = async (routeId) => {
     if(!window.confirm("¿Borrar esta ruta?")) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/routes/${routeId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/api/routes/${routeId}`, { method: 'DELETE' });
       if (res.ok) {
         setSavedRoutes(savedRoutes.filter(r => r.id !== routeId));
         clearRoute(); 

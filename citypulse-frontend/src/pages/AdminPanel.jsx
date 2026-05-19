@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { ShieldAlert, Trash2, Users, AlertCircle } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Administrator Dashboard Component.
  * Provides a global overview of registered users and allows forceful account deletion.
@@ -30,7 +33,7 @@ export default function AdminPanel() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('http://localhost:3000/api/admin/users', {
+        const res = await fetch(`${API_URL}/api/admin/users`, {
           headers: { 'x-admin-email': user.email }
         });
         if (res.ok) {
@@ -56,7 +59,7 @@ export default function AdminPanel() {
     if(!window.confirm(`⚠️ ADVERTENCIA: Vas a borrar toda la cuenta de ${name}. ¿Continuar?`)) return;
     
     try {
-      const res = await fetch(`http://localhost:3000/api/admin/users/${id}`, {
+      const res = await fetch(`${API_URL}/api/admin/users/${id}`, {
         method: 'DELETE',
         headers: { 'x-admin-email': user.email }
       });

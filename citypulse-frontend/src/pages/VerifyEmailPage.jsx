@@ -2,6 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Email Verification Handler Component.
  * Processes the token from the URL parameters to activate a newly registered account.
@@ -19,7 +22,7 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     const verify = async () => {
       try {
-        const res = await fetch(`http://localhost:3000/api/auth/verify-email?token=${token}`);
+        const res = await fetch(`${API_URL}/api/auth/verify-email?token=${token}`);
         if (res.ok) setStatus('success');
         else setStatus('error');
       } catch { 

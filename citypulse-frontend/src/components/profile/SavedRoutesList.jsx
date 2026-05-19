@@ -3,6 +3,9 @@ import { Map, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Component to display and manage user's stored routes.
  * Handles fetching from API and deletion of individual routes.
@@ -17,7 +20,7 @@ export default function SavedRoutesList() {
       const fetchRoutes = async () => {
         setIsLoadingRoutes(true);
         try {
-          const res = await fetch(`http://localhost:3000/api/routes/${user.id}`);
+          const res = await fetch(`${API_URL}/api/routes/${user.id}`);
           if (res.ok) {
             const data = await res.json();
             setSavedRoutes(data);
@@ -35,7 +38,7 @@ export default function SavedRoutesList() {
   const handleDeleteRoute = async (routeId) => {
     if(!window.confirm("¿Estás seguro de borrar esta ruta definitivamente?")) return;
     try {
-      const res = await fetch(`http://localhost:3000/api/routes/${routeId}`, { method: 'DELETE' });
+      const res = await fetch(`${API_URL}/api/routes/${routeId}`, { method: 'DELETE' });
       if (res.ok) {
         setSavedRoutes(savedRoutes.filter(r => r.id !== routeId));
       }

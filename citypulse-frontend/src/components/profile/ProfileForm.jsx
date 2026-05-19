@@ -2,6 +2,9 @@ import { useState, useRef } from 'react';
 import { User, Camera, Lock, Mail, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
+// Constante para la URL del backend (Producción o Local)
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
 /**
  * Form component for updating user profile information.
  * Handles avatar preview, data submission, and account deletion requests.
@@ -45,7 +48,7 @@ export default function ProfileForm() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/auth/profile', {
+      const response = await fetch(`${API_URL}/api/auth/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -88,7 +91,7 @@ export default function ProfileForm() {
   const handleDeleteAccount = async () => {
     if (window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Te enviaremos un correo para confirmar el borrado.')) {
       try {
-        const response = await fetch('http://localhost:3000/api/auth/request-delete', {
+        const response = await fetch(`${API_URL}/api/auth/request-delete`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: user.email }),
