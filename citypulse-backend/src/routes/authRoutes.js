@@ -2,12 +2,24 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
 
-export default function createAuthRoutes(prisma, transporter) {
+/**
+ * Initializes and configures the authentication and user management routes.
+ * Handles registration, login, profile updates, and secure email workflows (password reset, deletion).
+ * * @param {Object} prisma - The instantiated Prisma Client for database access.
+ * @param {Object} resend - The instantiated Resend client for transactional email delivery.
+ * @returns {express.Router} The configured Express router.
+ */
+export default function createAuthRoutes(prisma, resend) {
     const router = express.Router();
 
-    // Variable para usar la URL de Vercel en prod, o localhost en desarrollo
+    // Dynamically set the frontend URL for email links (Vercel in Prod, localhost in Dev)
     const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
+    /**
+     * POST /api/auth/register
+     * Registers a new user, hashes their password, generates a verification token, 
+     * and sends an account activation email.
+     */
     router.post('/register', async (req, res) => {
       try {
         const { name, email, password } = req.body;
@@ -26,8 +38,8 @@ export default function createAuthRoutes(prisma, transporter) {
     
         const verificationLink = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
         
-        const mailOptions = {
-          from: `"CityPulse" <${process.env.EMAIL_USER}>`,
+        await resend.emails.send({
+          from: 'CityPulse <onboarding@resend.dev>',
           to: email,
           subject: 'Activate your CityPulse account',
           html: `
@@ -40,9 +52,8 @@ export default function createAuthRoutes(prisma, transporter) {
               <p style="color: #6b7280; font-size: 13px;">Or copy and paste this link: <br> ${verificationLink}</p>
             </div>
           `
-        };
+        });
     
-        await transporter.sendMail(mailOptions);
         res.status(201).json({ message: 'User registered. Check email to activate.' });
     
       } catch (error) {
@@ -51,6 +62,10 @@ export default function createAuthRoutes(prisma, transporter) {
       }
     });
     
+    /**
+     * GET /api/auth/verify-email
+     * Activates a user account by validating the token sent to their email.
+     */
     router.get('/verify-email', async (req, res) => {
       try {
         const { token } = req.query;
@@ -70,6 +85,11 @@ export default function createAuthRoutes(prisma, transporter) {
       }
     });
     
+    /**
+     * POST /api/auth/login
+     * Authenticates a user using either their email or username and verifies their password.
+     * Prevents login if the account is pending email activation.
+     */
     router.post('/login', async (req, res) => {
       try {
         const { identifier, password } = req.body;
@@ -96,6 +116,10 @@ export default function createAuthRoutes(prisma, transporter) {
       }
     });
     
+    /**
+     * PUT /api/auth/profile
+     * Updates user profile information. Conditionally hashes and updates the password if provided.
+     */
     router.put('/profile', async (req, res) => {
       try {
         const { id, name, username, email, password, avatar } = req.body;
@@ -115,6 +139,11 @@ export default function createAuthRoutes(prisma, transporter) {
       }
     });
 
+    /**
+     * POST /api/auth/forgot-password
+     * Generates a time-sensitive reset token and emails a secure password recovery link to the user.
+     * Always returns a 200 OK status to prevent email enumeration attacks.
+     */
     router.post('/forgot-password', async (req, res) => {
         try {
           const { email } = req.body;
@@ -123,13 +152,13 @@ export default function createAuthRoutes(prisma, transporter) {
           if (!user) return res.status(200).json({ message: 'If the email exists, instructions will be sent.' });
       
           const resetToken = crypto.randomBytes(32).toString('hex');
-          const resetTokenExpiry = new Date(Date.now() + 3600000); 
+          const resetTokenExpiry = new Date(Date.now() + 3600000); // Token expires in 1 hour
       
           await prisma.user.update({ where: { email }, data: { resetToken, resetTokenExpiry } });
           const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
       
-          await transporter.sendMail({
-            from: `"CityPulse" <${process.env.EMAIL_USER}>`,
+          await resend.emails.send({
+            from: 'CityPulse <onboarding@resend.dev>',
             to: email,
             subject: 'Password Recovery - CityPulse',
             html: `
@@ -151,7 +180,11 @@ export default function createAuthRoutes(prisma, transporter) {
         }
       });
       
-      router.post('/reset-password', async (req, res) => {
+    /**
+     * POST /api/auth/reset-password
+     * Validates a password reset token and securely updates the user's password in the database.
+     */
+    router.post('/reset-password', async (req, res) => {
         try {
           const { token, newPassword } = req.body;
           const user = await prisma.user.findFirst({
@@ -174,7 +207,11 @@ export default function createAuthRoutes(prisma, transporter) {
         }
       });
       
-      router.post('/request-delete', async (req, res) => {
+    /**
+     * POST /api/auth/request-delete
+     * Initiates the account deletion process by generating a token and sending a confirmation email.
+     */
+    router.post('/request-delete', async (req, res) => {
         try {
           const { email } = req.body;
           const user = await prisma.user.findUnique({ where: { email } });
@@ -182,13 +219,13 @@ export default function createAuthRoutes(prisma, transporter) {
           if (!user) return res.status(404).json({ error: 'User not found.' });
       
           const deleteToken = crypto.randomBytes(32).toString('hex');
-          const deleteTokenExpiry = new Date(Date.now() + 3600000); 
+          const deleteTokenExpiry = new Date(Date.now() + 3600000); // Token expires in 1 hour
       
           await prisma.user.update({ where: { email }, data: { deleteToken, deleteTokenExpiry } });
           const deleteLink = `${FRONTEND_URL}/confirm-delete?token=${deleteToken}`;
           
-          await transporter.sendMail({
-            from: `"CityPulse" <${process.env.EMAIL_USER}>`,
+          await resend.emails.send({
+            from: 'CityPulse <onboarding@resend.dev>',
             to: email,
             subject: 'Account Deletion Request - CityPulse',
             html: `
@@ -208,7 +245,12 @@ export default function createAuthRoutes(prisma, transporter) {
         }
       });
       
-      router.get('/confirm-delete', async (req, res) => {
+    /**
+     * GET /api/auth/confirm-delete
+     * Validates a deletion token and performs a soft-delete by anonymizing the user's data 
+     * while preserving referential integrity in the database.
+     */
+    router.get('/confirm-delete', async (req, res) => {
         try {
           const { token } = req.query;
           const user = await prisma.user.findFirst({
@@ -217,6 +259,7 @@ export default function createAuthRoutes(prisma, transporter) {
       
           if (!user) return res.status(400).json({ error: 'Invalid or expired link.' });
       
+          // Soft-delete: Anonymizes data to keep database relationships intact
           await prisma.user.update({
             where: { id: user.id },
             data: { 

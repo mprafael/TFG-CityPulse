@@ -6,7 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// 1. Tabla de Usuarios
+// Tabla de Usuarios
 model User {
   id               String    @id @default(uuid())
   name             String   
@@ -32,7 +32,7 @@ model User {
   updatedAt        DateTime  @updatedAt      
 }
 
-// 2. Tabla de Rutas Guardadas
+// Tabla de Rutas Guardadas
 model Route {
   id          String   @id @default(uuid())
   name        String   // Ej: "Ruta al trabajo", "Viaje al centro"

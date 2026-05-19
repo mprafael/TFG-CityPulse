@@ -7,8 +7,8 @@ import pkg from '@prisma/client';
 const { PrismaClient } = pkg;
 import pg from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
-import nodemailer from 'nodemailer';
 import createAdminRoutes from './routes/adminRoutes.js';
+import { Resend } from 'resend';
 
 import { initSimulation, spawnVehiclesNear, updateSimulationState, getActiveVehicles } from './services/simulationEngine.js';
 import createAuthRoutes from './routes/authRoutes.js';
@@ -23,22 +23,10 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
-// Email Service Initialization
-const transporter = nodemailer.createTransport({
-  host: '142.250.110.108', // IP fija de smtp.gmail.com para forzar IPv4 y evitar bloqueos
-  port: 587,
-  secure: false, // Obligatorio para el puerto 587
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+// Resend, Email Service Initialization
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-transporter.verify().then(() => {
-  console.log('[SMTP] Service ready.');
-}).catch((error) => console.error('[SMTP] Connection error:', error));
-
-// NUEVO: Configuración de orígenes permitidos (Local + Producción en Vercel)
+// Configuración de orígenes permitidos (Local + Producción en Vercel)
 const originPermitidos = ['http://localhost:5173', 'https://tfg-city-pulse.vercel.app'];
 
 // Express Application Setup
@@ -51,7 +39,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // API Routes
 app.get('/api/status', (req, res) => res.json({ status: 'Online', service: 'CityPulse Backend' }));
-app.use('/api/auth', createAuthRoutes(prisma, transporter));
+app.use('/api/auth', createAuthRoutes(prisma, resend));
 app.use('/api/admin', createAdminRoutes(prisma));
 app.use('/api/routes', createMapRoutes(prisma));
 

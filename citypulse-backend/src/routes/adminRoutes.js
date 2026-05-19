@@ -1,10 +1,20 @@
 import express from 'express';
 
+/**
+ * Initializes and configures the administration routes for the application.
+ * These routes are protected and require specific admin privileges.
+ * * @param {Object} prisma - The instantiated Prisma Client for database access.
+ * @returns {express.Router} The configured Express router.
+ */
 export default function createAdminRoutes(prisma) {
   const router = express.Router();
 
   /**
-   * Middleware: Verifica si la petición proviene del correo administrador maestro.
+   * Middleware: Security check for admin privileges.
+   * Verifies if the incoming request contains the master admin email in the headers.
+   * * @param {Object} req - Express request object.
+   * @param {Object} res - Express response object.
+   * @param {Function} next - Express next middleware function.
    */
   const isAdmin = (req, res, next) => {
     const adminEmail = req.headers['x-admin-email'];
@@ -16,7 +26,8 @@ export default function createAdminRoutes(prisma) {
 
   /**
    * GET /api/admin/users
-   * Devuelve todos los usuarios y la cantidad de rutas que tiene cada uno.
+   * Retrieves a list of all registered users along with their associated route count.
+   * Sorted by creation date in descending order.
    */
   router.get('/users', isAdmin, async (req, res) => {
     try {
@@ -27,7 +38,7 @@ export default function createAdminRoutes(prisma) {
           email: true,
           isActive: true,
           createdAt: true,
-          _count: { select: { routes: true } } // Cuenta cuántas rutas tiene asociadas
+          _count: { select: { routes: true } } // Counts the number of routes associated with the user
         },
         orderBy: { createdAt: 'desc' }
       });
@@ -40,7 +51,7 @@ export default function createAdminRoutes(prisma) {
 
   /**
    * DELETE /api/admin/users/:id
-   * Elimina un usuario por completo de la base de datos.
+   * Permanently deletes a user from the database based on their ID.
    */
   router.delete('/users/:id', isAdmin, async (req, res) => {
     try {

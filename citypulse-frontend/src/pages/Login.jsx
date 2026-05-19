@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import AuthInputs from '../components/auth/AuthInputs';
 import OAuthProviders from '../components/auth/OAuthProviders';
 
-// Constante para la URL del backend (Producción o Local)
+// Backend's URL constant (Production o Local environment)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**

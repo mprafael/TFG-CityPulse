@@ -6,7 +6,7 @@ export default defineConfig({
   migrations: {
     path: "prisma/migrations",
   },
-  // CAMBIO AQUÍ: Usamos DIRECT_URL para las migraciones
+  // DIRECT_URL para las migraciones
   datasource: {
     url: process.env["DIRECT_URL"], 
   },

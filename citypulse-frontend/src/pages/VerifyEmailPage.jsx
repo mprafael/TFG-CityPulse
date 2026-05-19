@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
-// Constante para la URL del backend (Producción o Local)
+// Backend's URL constant (Production o Local environment)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 /**
