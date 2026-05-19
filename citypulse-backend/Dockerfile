@@ -1,24 +1,24 @@
 FROM node:20-slim
 
-# Habilitar corepack para gestionar pnpm de forma nativa
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 1. Instalar pnpm de la forma clásica y a prueba de fallos
+RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copiar los manifiestos de dependencias
-COPY package.json pnpm-lock.yaml ./
+# 2. El asterisco (*) es clave: copia el lockfile SOLO si existe en GitHub, si no, no da error
+COPY package.json pnpm-lock.yaml* ./
 
-# Instalar todas las dependencias del proyecto
-RUN pnpm install --frozen-lockfile
+# 3. Instalamos de forma normal (sin --frozen-lockfile para evitar caídas)
+RUN pnpm install
 
-# Copiar el resto del código fuente del backend
+# 4. Copiamos el resto de tu código
 COPY . .
 
-# Generar el cliente de Prisma para interactuar con Supabase
+# 5. Generamos Prisma (vital para conectarse a Supabase)
 RUN pnpm prisma generate
 
-# Exponer el puerto en el que escucha la API de Node/Express
+# 6. Exponemos el puerto
 EXPOSE 3000
 
-# Comando para iniciar el servidor de WebSockets y la API
+# 7. Arrancamos el servidor
 CMD ["pnpm", "start"]
