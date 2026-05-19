@@ -33,9 +33,15 @@ transporter.verify().then(() => {
   console.log('[SMTP] Service ready.');
 }).catch((error) => console.error('[SMTP] Connection error:', error));
 
+// NUEVO: Configuración de orígenes permitidos (Local + Producción en Vercel)
+const originPermitidos = ['http://localhost:5173', 'https://tfg-city-pulse.vercel.app'];
+
 // Express Application Setup
 const app = express();
-app.use(cors()); 
+app.use(cors({
+  origin: originPermitidos,
+  credentials: true
+})); 
 app.use(express.json({ limit: '10mb' }));
 
 // API Routes
@@ -47,7 +53,11 @@ app.use('/api/routes', createMapRoutes(prisma));
 // WebSockets Setup
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
-  cors: { origin: "http://localhost:5173", methods: ["GET", "POST"] }
+  cors: { 
+    origin: originPermitidos, 
+    methods: ["GET", "POST"],
+    credentials: true
+  }
 });
 
 // Simulation Engine Initialization
