@@ -5,6 +5,9 @@ import crypto from 'crypto';
 export default function createAuthRoutes(prisma, transporter) {
     const router = express.Router();
 
+    // Variable para usar la URL de Vercel en prod, o localhost en desarrollo
+    const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
     router.post('/register', async (req, res) => {
       try {
         const { name, email, password } = req.body;
@@ -21,7 +24,7 @@ export default function createAuthRoutes(prisma, transporter) {
           data: { name, email, password: hashedPassword, verificationToken, isActive: false }
         });
     
-        const verificationLink = `http://localhost:5173/verify-email?token=${verificationToken}`;
+        const verificationLink = `${FRONTEND_URL}/verify-email?token=${verificationToken}`;
         
         const mailOptions = {
           from: `"CityPulse" <${process.env.EMAIL_USER}>`,
@@ -123,7 +126,7 @@ export default function createAuthRoutes(prisma, transporter) {
           const resetTokenExpiry = new Date(Date.now() + 3600000); 
       
           await prisma.user.update({ where: { email }, data: { resetToken, resetTokenExpiry } });
-          const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+          const resetLink = `${FRONTEND_URL}/reset-password?token=${resetToken}`;
       
           await transporter.sendMail({
             from: `"CityPulse" <${process.env.EMAIL_USER}>`,
@@ -182,7 +185,7 @@ export default function createAuthRoutes(prisma, transporter) {
           const deleteTokenExpiry = new Date(Date.now() + 3600000); 
       
           await prisma.user.update({ where: { email }, data: { deleteToken, deleteTokenExpiry } });
-          const deleteLink = `http://localhost:5173/confirm-delete?token=${deleteToken}`;
+          const deleteLink = `${FRONTEND_URL}/confirm-delete?token=${deleteToken}`;
           
           await transporter.sendMail({
             from: `"CityPulse" <${process.env.EMAIL_USER}>`,
