@@ -1,0 +1,17 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Archivos de entorno (Seguridad)
+.env
+.env.*
+
+# Archivos de compilación
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
