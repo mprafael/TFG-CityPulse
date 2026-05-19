@@ -25,16 +25,15 @@ const prisma = new PrismaClient({ adapter });
 
 // Email Service Initialization
 const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
+  host: '142.251.10.108',
   port: 587,
   secure: false,
   auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-  // Forzar resolución por IPv4 para evitar el error ENETUNREACH en Render
   tls: {
     rejectUnauthorized: false
-  },
-  family: 4 
+  }
 });
+
 transporter.verify().then(() => {
   console.log('[SMTP] Service ready.');
 }).catch((error) => console.error('[SMTP] Connection error:', error));
