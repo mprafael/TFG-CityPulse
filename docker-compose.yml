@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # SERVICIO 1: API en Node.js + Socket.io
+  backend:
+    build:
+      context: ./citypulse-backend
+      dockerfile: Dockerfile
+    container_name: citypulse-backend-local
+    ports:
+      - "3000:3000"
+    # Lee .env directamente desde la carpeta del backend
+    env_file:
+      - ./citypulse-backend/.env
+    environment:
+      - PORT=3000
+    restart: on-failure
+
+  # SERVICIO 2: interfaz en React (Vite)
+  frontend:
+    image: node:20-slim
+    container_name: citypulse-frontend-local
+    working_dir: /app
+    # Mapeamos específicamente la carpeta citypulse-frontend a /app
+    volumes:
+      - ./citypulse-frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    # Lee también las variables de entorno del frontend
+    env_file:
+      - ./citypulse-frontend/.env
+    environment:
+      # Sobrescribimos esto para asegurar que en local apunte al backend de Docker
+      - VITE_API_URL=http://localhost:3000
+    # Instala todo y lanza Vite
+    command: >
+      sh -c "npm install -g pnpm && pnpm install && pnpm dev --host"
+    depends_on:
+      - backend
+    restart: on-failure
