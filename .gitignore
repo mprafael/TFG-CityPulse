@@ -4,7 +4,6 @@ node_modules/
 
 # Archivos de entorno (Seguridad)
 .env
-.env.*
 
 # Archivos de compilación
 dist/
