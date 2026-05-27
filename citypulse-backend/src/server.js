@@ -26,7 +26,7 @@ const prisma = new PrismaClient({ adapter });
 // Resend, Email Service Initialization
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Configuración de orígenes permitidos (Local + Producción en Vercel)
+// Configuring allowed sources (Local + Vercel in production)
 const originPermitidos = ['http://localhost:5173', 'https://tfg-city-pulse.vercel.app'];
 
 // Express Application Setup
