@@ -48,7 +48,7 @@ export default function Navbar() {
       </Link>
       
       <div className="flex items-center gap-6">
-        <Link to="/" className="flex items-center gap-1 text-gray-600 hover:text-citypulse-blue font-medium transition">
+        <Link to="/" className="flex items-center gap-1 text-gray-600 hover:text-citypulse-blue font-medium transition hidden md:flex">
           <HomeIcon size={18}/> Inicio
         </Link>
         <Link to="/map" className="flex items-center gap-1 text-gray-600 hover:text-citypulse-blue font-medium transition">
