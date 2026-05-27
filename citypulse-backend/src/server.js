@@ -72,7 +72,7 @@ io.on('connection', (socket) => {
 setInterval(() => {
   const updatedState = updateSimulationState();
   if(updatedState.length > 0) io.emit('vehiclesUpdate', updatedState);
-}, 2000); 
+}, 5000); 
 
 // Start Server
 httpServer.listen(PORT, () => {

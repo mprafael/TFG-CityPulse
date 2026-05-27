@@ -224,7 +224,7 @@ export default function ProfileForm() {
       </form>
 
       <div className="pt-8 border-t border-gray-200 mt-8">
-        <h3 className="text-lg font-bold text-red-600 mb-2">Zona Peligrosa</h3>
+        <h3 className="text-lg font-bold text-red-600 mb-2">¡Precaución!</h3>
         <p className="text-sm text-gray-500 mb-4">
           Una vez elimines tu cuenta, tus datos personales se borrarán y no habrá vuelta atrás.
         </p>
